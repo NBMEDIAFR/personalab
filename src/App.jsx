@@ -328,12 +328,132 @@ Frustrations: ${persona.frustrations.join(", ")}`;
 // ─── EDIT FORM ───
 function EditForm({ initial, onSave, onCancel }) {
   const [form, setForm] = useState({ ...initial });
+  const [importing, setImporting] = useState(false);
+  const [importStatus, setImportStatus] = useState(null);
+  const fileRef = useState(null);
   const set = (k,v) => setForm(f=>({...f,[k]:v}));
   const setMd = (k,v) => setForm(f=>({...f,marketData:{...f.marketData,[k]:v}}));
   const fs = {width:"100%",background:"#0d0d0d",border:"1px solid #252525",borderRadius:8,color:"#fff",padding:"9px 12px",fontSize:13,outline:"none",boxSizing:"border-box"};
   const ls = {color:"#444",fontSize:10,textTransform:"uppercase",letterSpacing:1,marginBottom:5,display:"block"};
+
+  const importFromDoc = async (file) => {
+    if (!file) return;
+    setImporting(true);
+    setImportStatus("Lecture du document...");
+    try {
+      // Read file as base64
+      const base64 = await new Promise((res, rej) => {
+        const reader = new FileReader();
+        reader.onload = () => res(reader.result.split(",")[1]);
+        reader.onerror = rej;
+        reader.readAsDataURL(file);
+      });
+
+      const isPDF = file.type === "application/pdf";
+      setImportStatus("Analyse du document par l'IA...");
+
+      const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
+      const sys = `Tu es un expert en construction de personas éditoriaux pour les médias.
+On te soumet un document décrivant un profil utilisateur, une étude terrain, une fiche persona, ou tout autre document pertinent.
+Tu dois en extraire les informations pour enrichir un persona éditorial existant.
+Réponds UNIQUEMENT en JSON valide sans backticks ni markdown, format exact :
+{
+  "name": "<prénom si trouvé, sinon null>",
+  "age": "<âge si trouvé, sinon null>",
+  "city": "<ville/pays si trouvé, sinon null>",
+  "job": "<profession/statut si trouvé, sinon null>",
+  "bio": "<biographie synthétique 2-3 phrases, sinon null>",
+  "medias": ["<media 1>", "<media 2>"],
+  "interests": ["<intérêt 1>"],
+  "frustrations": ["<frustration 1>"],
+  "hooks": ["<accroche 1>"],
+  "triggers": ["<déclencheur 1>"],
+  "tags": ["<tag 1>"],
+  "marketData": {
+    "revenu": "<si mentionné, sinon null>",
+    "forfait": "<si mentionné, sinon null>",
+    "adoption": "<si mentionné, sinon null>",
+    "genres": "<genres préférés si mentionnés, sinon null>",
+    "source": "<source du document>"
+  },
+  "notes": "<observations complémentaires utiles, sinon null>"
+}
+Pour les tableaux, ne retourne que les éléments trouvés dans le document. Ne suis pas la liste si elle est vide.`;
+
+      const userContent = isPDF
+        ? [{ type: "document", source: { type: "base64", media_type: "application/pdf", data: base64 } },
+           { type: "text", text: `Extrais les informations de ce document pour enrichir le persona "${form.name || 'nouveau'}". Profil existant : ${form.bio || 'aucun'}` }]
+        : [{ type: "text", text: `Extrais les informations de ce document texte pour enrichir le persona "${form.name || 'nouveau'}".
+
+Contenu : ${atob(base64).substring(0, 8000)}` }];
+
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-api-key": apiKey, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
+        body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 2000, system: sys, messages: [{ role: "user", content: userContent }] })
+      });
+
+      const data = await res.json();
+      const text = data.content.map(i => i.text || "").join("");
+      const clean = text.replace(/```json|```/g, "").trim();
+      const extracted = JSON.parse(clean);
+
+      // Merge: enrich existing fields, don't overwrite if doc has nothing
+      setForm(f => {
+        const merged = { ...f };
+        if (extracted.name && !f.name) merged.name = extracted.name;
+        if (extracted.age && !f.age) merged.age = extracted.age;
+        if (extracted.city && !f.city) merged.city = extracted.city;
+        if (extracted.job && !f.job) merged.job = extracted.job;
+        if (extracted.bio) merged.bio = f.bio ? `${f.bio}
+
+[Import doc] ${extracted.bio}` : extracted.bio;
+        // Merge arrays — add new items without duplicating
+        ["medias","interests","frustrations","hooks","triggers","tags"].forEach(k => {
+          if (extracted[k]?.length) {
+            const existing = f[k] || [];
+            const newItems = extracted[k].filter(item => !existing.some(e => e.toLowerCase() === item.toLowerCase()));
+            merged[k] = [...existing, ...newItems];
+          }
+        });
+        // Merge marketData
+        if (extracted.marketData) {
+          merged.marketData = { ...f.marketData };
+          Object.entries(extracted.marketData).forEach(([k, v]) => {
+            if (v && !merged.marketData[k]) merged.marketData[k] = v;
+          });
+        }
+        if (extracted.notes) merged.notes = f.notes ? `${f.notes}
+
+[Import] ${extracted.notes}` : extracted.notes;
+        return merged;
+      });
+
+      setImportStatus("✓ Document importé — les champs ont été enrichis");
+      setTimeout(() => setImportStatus(null), 4000);
+    } catch(e) {
+      console.error(e);
+      setImportStatus("Erreur lors de l'import. Vérifiez le format du fichier.");
+      setTimeout(() => setImportStatus(null), 4000);
+    } finally {
+      setImporting(false);
+    }
+  };
+
   return <div style={{height:"100%",overflowY:"auto",padding:"24px 28px"}}>
-    <h3 style={{color:"#fff",fontFamily:"'Playfair Display',serif",fontSize:20,marginBottom:20}}>Modifier — {initial.name}</h3>
+    <h3 style={{color:"#fff",fontFamily:"'Playfair Display',serif",fontSize:20,marginBottom:16}}>Modifier — {initial.name || "Nouveau persona"}</h3>
+
+    {/* ✨ IMPORT DOCUMENT */}
+    <div style={{background:"#0d1117",border:"1px solid #6c63ff33",borderRadius:10,padding:"14px 18px",marginBottom:20}}>
+      <div style={{color:"#6c63ff",fontSize:11,textTransform:"uppercase",letterSpacing:1,marginBottom:8,fontWeight:700}}>✨ Enrichir depuis un document</div>
+      <p style={{color:"#555",fontSize:12,margin:"0 0 12px 0",lineHeight:1.6}}>Importez une fiche persona, une étude terrain, un rapport ou tout document descriptif. L'IA en extraira automatiquement les informations et enrichira les champs ci-dessous.</p>
+      <label style={{display:"inline-block",background:importing?"#1a1a1a":"#6c63ff22",border:"1px solid #6c63ff44",color:importing?"#444":"#6c63ff",padding:"8px 16px",borderRadius:8,cursor:importing?"not-allowed":"pointer",fontSize:13,fontWeight:600}}>
+        {importing ? "Analyse en cours..." : "📎 Sélectionner un document (PDF, Word, TXT)"}
+        <input type="file" accept=".pdf,.doc,.docx,.txt" disabled={importing} onChange={e=>e.target.files[0]&&importFromDoc(e.target.files[0])} style={{display:"none"}}/>
+      </label>
+      {importStatus && <div style={{marginTop:10,fontSize:12,color:importStatus.startsWith("✓")?"#27ae60":"#f5a623",fontStyle:"italic"}}>{importStatus}</div>}
+    </div>
+
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:14}}>
       <div><label style={ls}>Prénom</label><input value={form.name} onChange={e=>set("name",e.target.value)} style={fs}/></div>
       <div><label style={ls}>Emoji</label><input value={form.emoji} onChange={e=>set("emoji",e.target.value)} style={{...fs,textAlign:"center",fontSize:22}}/></div>
