@@ -71,13 +71,16 @@ const saveData = (d) => { try{localStorage.setItem(STORAGE_KEY,JSON.stringify(d)
 
 async function callClaude(system, userMsg, docContent=null) {
   const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
-  const content = docContent ? [docContent, {type:"text",text:userMsg}] : userMsg;
+  const msgContent = docContent ? [docContent, {type:"text",text:userMsg}] : userMsg;
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method:"POST",
     headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
-    body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:2000,system,messages:[{role:"user",content}]})
+    body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:2000,system,messages:[{role:"user",content:msgContent}]})
   });
-  if(!res.ok) throw new Error(`API ${res.status}`);
+  if(!res.ok) {
+    const errData = await res.json().catch(()=>({}));
+    throw new Error(`API ${res.status} : ${errData?.error?.message||res.statusText}`);
+  }
   const data = await res.json();
   return data.content.map(i=>i.text||"").join("");
 }
@@ -439,7 +442,13 @@ Réponds UNIQUEMENT en JSON valide sans backticks :
       let doc=null;
       const d=docRef.current;
       if(d){
-        if(d.type==="pdf") doc={type:"document",source:{type:"base64",media_type:d.mime,data:d.b64}};
+        // Check size — API limit ~5MB base64
+        const sizeKB = Math.round(d.b64.length * 0.75 / 1024);
+        if(sizeKB > 4500) {
+          setError(`Fichier trop volumineux (${sizeKB}KB). Limite : ~4.5MB. Pour un PDF long, copiez-collez les passages clés directement.`);
+          setLoading(false); return;
+        }
+        if(d.type==="pdf") doc={type:"document",source:{type:"base64",media_type:"application/pdf",data:d.b64}};
         else if(d.type==="audio") doc={type:"document",source:{type:"base64",media_type:d.mime,data:d.b64}};
         else if(d.type==="image") doc={type:"image",source:{type:"base64",media_type:d.mime,data:d.b64}};
       }
@@ -449,8 +458,12 @@ Réponds UNIQUEMENT en JSON valide sans backticks :
         ?`Analyse cette image comme contenu éditorial depuis le point de vue de ${persona.name} :\n\n${content}`
         :`Analyse ce contenu :\n\n${content}`;
       const text=await callClaude(sys,userMsg,doc);
-      setResult(JSON.parse(text.replace(/\`\`\`json|\`\`\`/g,"").trim()));
-    }catch(e){setError("Erreur d\'analyse. Vérifiez la connexion.");}
+      const clean=text.replace(/\`\`\`json|\`\`\`/g,"").trim();
+      setResult(JSON.parse(clean));
+    }catch(e){
+      console.error("Analysis error:",e);
+      setError(`Erreur d\'analyse : ${e.message||"connexion impossible"}. Si vous avez importé un fichier, essayez de copier-coller son contenu directement.`);
+    }
     finally{setLoading(false);}
   };
 
