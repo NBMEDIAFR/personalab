@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import * as mammoth from "mammoth";
 
 const STORAGE_KEY = "personalab-v6";
