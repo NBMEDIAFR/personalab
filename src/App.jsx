@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import * as mammoth from "mammoth";
 
 const STORAGE_KEY = "personalab-v6";
 
@@ -395,9 +396,8 @@ function TestPanel({persona,allPersonas,onSelectPersona}) {
 
       } else if(isDocx) {
         const arrBuf = await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsArrayBuffer(file);});
-        const raw = new TextDecoder("utf-8",{fatal:false}).decode(new Uint8Array(arrBuf));
-        const matches = [...raw.matchAll(/<w:t[^>]*>([^<]+)<\/w:t>/g)];
-        const extracted = matches.map(m=>m[1]).join(" ").replace(/\s+/g," ").trim().substring(0,6000);
+        const result = await mammoth.extractRawText({arrayBuffer: arrBuf});
+        const extracted = result.value?.trim().substring(0,6000);
         setContent(extracted || "[Document Word vide — collez le contenu manuellement]");
 
       } else if(isText) {
@@ -667,13 +667,11 @@ Réponds UNIQUEMENT en JSON valide sans backticks :
       if(isPDF){
         userContent=[{type:"document",source:{type:"base64",media_type:"application/pdf",data:base64}},{type:"text",text:`Extrais les infos pour "${form.name||"nouveau"}"`}];
       } else if(isDocxFile){
-        const arrBuf=await new Promise((res2,rej2)=>{const r2=new FileReader();r2.onload=()=>res2(r2.result);r2.onerror=rej2;r2.readAsArrayBuffer(file);});
-        const rawDoc=new TextDecoder("utf-8",{fatal:false}).decode(new Uint8Array(arrBuf));
-        const wMatches=[...rawDoc.matchAll(/<w:t[^>]*>([^<]+)<\/w:t>/g)];
-        const docText=wMatches.map(m=>m[1]).join(" ").replace(/\s+/g," ").trim().substring(0,6000);
-        userContent=[{type:"text",text:`Extrais les infos de ce document Word pour "${form.name||"nouveau"}":
+        const arrBuf=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsArrayBuffer(file);});
+        const mammothResult=await mammoth.extractRawText({arrayBuffer:arrBuf});
+        const docText=mammothResult.value?.trim().substring(0,6000)||"[texte non extrait]";
+        userContent=[{type:"text",text:`Extrais les infos de ce document Word pour "${form.name||"nouveau"}":\n\n${docText}`}]
 
-${docText||"[texte non extrait]"}`}];
       } else {
         const textDec=new TextDecoder("utf-8",{fatal:false});
         const textContent=textDec.decode(Uint8Array.from(atob(base64),c=>c.charCodeAt(0))).substring(0,6000);
