@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import * as mammoth from "mammoth";
+import * as pdfjsLib from "pdfjs-dist";
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`;
 
 const STORAGE_KEY = "personalab-v6";
 
@@ -388,10 +390,23 @@ function TestPanel({persona,allPersonas,onSelectPersona,initialContent=""}) {
       const toBase64=(f)=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(",")[1]);r.onerror=rej;r.readAsDataURL(f);});
 
       if(isPDF){
-        const b64=await toBase64(file);
-        docRef.current={type:"pdf",b64,mime:"application/pdf"};
-        setContent(`[PDF : ${file.name}]`);
-        setFileLabel(`📄 ${file.name}`);
+        // Extract full text from PDF using pdfjs — no token limit issue
+        setContent(`Extraction du texte en cours...`);
+        const arrBuf=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsArrayBuffer(file);});
+        const pdf=await pdfjsLib.getDocument({data:arrBuf}).promise;
+        const numPages=pdf.numPages;
+        let fullText="";
+        for(let i=1;i<=numPages;i++){
+          const page=await pdf.getPage(i);
+          const textContent=await page.getTextContent();
+          const pageText=textContent.items.map(item=>item.str).join(" ");
+          fullText+=pageText+" ";
+          if(fullText.length>80000) break; // ~20000 mots, largement suffisant
+        }
+        const extracted=fullText.trim().replace(/\s+/g," ");
+        docRef.current=null; // text only, no binary
+        setContent(extracted||"[PDF vide ou texte non extractible]");
+        setFileLabel(`📄 ${file.name} (${numPages} pages)`);
       } else if(isDocx){
         const arrBuf=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsArrayBuffer(file);});
         const result=await mammoth.extractRawText({arrayBuffer:arrBuf});
@@ -442,14 +457,14 @@ Réponds UNIQUEMENT en JSON valide sans backticks :
       let doc=null;
       const d=docRef.current;
       if(d){
-        // Check size — API limit ~5MB base64
         const sizeKB = Math.round(d.b64.length * 0.75 / 1024);
-        if(sizeKB > 4500) {
-          setError(`Fichier trop volumineux (${sizeKB}KB). Limite : ~4.5MB. Pour un PDF long, copiez-collez les passages clés directement.`);
-          setLoading(false); return;
+        if(d.type==="audio") {
+          if(sizeKB > 4500) {
+            setError(`Fichier audio trop volumineux (${sizeKB}KB). Limite : ~4.5MB.`);
+            setLoading(false); return;
+          }
+          doc={type:"document",source:{type:"base64",media_type:d.mime,data:d.b64}};
         }
-        if(d.type==="pdf") doc={type:"document",source:{type:"base64",media_type:"application/pdf",data:d.b64}};
-        else if(d.type==="audio") doc={type:"document",source:{type:"base64",media_type:d.mime,data:d.b64}};
         else if(d.type==="image") doc={type:"image",source:{type:"base64",media_type:d.mime,data:d.b64}};
       }
       const userMsg=d?.type==="audio"
