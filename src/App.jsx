@@ -354,150 +354,108 @@ function DetailView({persona,onEdit,onDelete,onTest,onUpdate}) {
 }
 
 // ─── TEST PANEL ───
-function TestPanel({persona,allPersonas,onSelectPersona}) {
-  const [content,setContent]=useState("");
+function TestPanel({persona,allPersonas,onSelectPersona,initialContent=""}) {
+  const [content,setContent]=useState(initialContent||"");
   const [loading,setLoading]=useState(false);
   const [result,setResult]=useState(null);
   const [error,setError]=useState(null);
   const [fileLoading,setFileLoading]=useState(false);
-
-  // When persona changes (cross-test navigation), restore saved content
-  useEffect(()=>{
-    const saved=sessionStorage.getItem("crossTestContent");
-    if(saved){
-      sessionStorage.removeItem("crossTestContent");
-      setContent(saved);
-      setResult(null);
-    }
-  },[persona.id]);
+  const [fileLabel,setFileLabel]=useState(null);
+  const docRef = useRef(null); // stores {type, b64, mime} in memory, no sessionStorage
   const scoreColor=result?(result.score>=70?"#16a34a":result.score>=40?"#d97706":"#dc2626"):"#0f172a";
+
+  // When persona changes via cross-test, restore content
+  useEffect(()=>{
+    if(initialContent) setContent(initialContent);
+  },[initialContent]);
 
   const readFile=async(file)=>{
     setFileLoading(true);
-    sessionStorage.removeItem("lastDocB64");
-    sessionStorage.removeItem("lastDocType");
+    docRef.current = null;
+    setFileLabel(null);
     try {
-      const name = file.name.toLowerCase();
-      const type = file.type;
+      const name=file.name.toLowerCase();
+      const type=file.type;
+      const isPDF=type==="application/pdf";
+      const isDocx=name.endsWith(".docx")||type.includes("wordprocessingml");
+      const isText=type.startsWith("text/")||name.endsWith(".txt")||name.endsWith(".md");
+      const isAudio=type.startsWith("audio/")||[".mp3",".wav",".m4a",".ogg",".flac",".aac",".webm"].some(e=>name.endsWith(e));
+      const isImage=type.startsWith("image/")||[".jpg",".jpeg",".png",".gif",".webp"].some(e=>name.endsWith(e));
 
-      const isPDF = type==="application/pdf";
-      const isDocx = name.endsWith(".docx") || type==="application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-      const isText = type.startsWith("text/") || name.endsWith(".txt") || name.endsWith(".md");
-      const isAudio = type.startsWith("audio/") || name.endsWith(".mp3") || name.endsWith(".wav") || name.endsWith(".m4a") || name.endsWith(".ogg") || name.endsWith(".flac") || name.endsWith(".aac") || name.endsWith(".webm");
-      const isImage = type.startsWith("image/") || name.endsWith(".jpg") || name.endsWith(".jpeg") || name.endsWith(".png") || name.endsWith(".gif") || name.endsWith(".webp");
+      const toBase64=(f)=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(",")[1]);r.onerror=rej;r.readAsDataURL(f);});
 
-      const toBase64 = (f,asDataURL=false) => new Promise((res,rej)=>{
-        const r=new FileReader();
-        r.onload=()=>res(asDataURL ? r.result : r.result.split(",")[1]);
-        r.onerror=rej;
-        r.readAsDataURL(f);
-      });
-
-      if(isPDF) {
-        const base64 = await toBase64(file);
+      if(isPDF){
+        const b64=await toBase64(file);
+        docRef.current={type:"pdf",b64,mime:"application/pdf"};
         setContent(`[PDF : ${file.name}]`);
-        sessionStorage.setItem("lastDocB64", base64);
-        sessionStorage.setItem("lastDocType", "pdf");
-        sessionStorage.setItem("lastDocName", file.name);
-
-      } else if(isDocx) {
-        const arrBuf = await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsArrayBuffer(file);});
-        const result = await mammoth.extractRawText({arrayBuffer: arrBuf});
-        const extracted = result.value?.trim().substring(0,6000);
-        setContent(extracted || "[Document Word vide — collez le contenu manuellement]");
-
-      } else if(isText) {
-        const text = await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsText(file,"UTF-8");});
+        setFileLabel(`📄 ${file.name}`);
+      } else if(isDocx){
+        const arrBuf=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsArrayBuffer(file);});
+        const result=await mammoth.extractRawText({arrayBuffer:arrBuf});
+        const extracted=result.value?.trim().substring(0,6000);
+        setContent(extracted||"[Document Word vide — collez le contenu manuellement]");
+        setFileLabel(`📝 ${file.name}`);
+      } else if(isText){
+        const text=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsText(file,"UTF-8");});
         setContent(text.substring(0,6000));
-
-      } else if(isAudio) {
-        const base64 = await toBase64(file);
-        const audioMime = type || "audio/mpeg";
+        setFileLabel(`📄 ${file.name}`);
+      } else if(isAudio){
+        const b64=await toBase64(file);
+        const mime=type||"audio/mpeg";
+        docRef.current={type:"audio",b64,mime};
         setContent(`[Audio : ${file.name}]`);
-        sessionStorage.setItem("lastDocB64", base64);
-        sessionStorage.setItem("lastDocType", "audio");
-        sessionStorage.setItem("lastDocMime", audioMime);
-        sessionStorage.setItem("lastDocName", file.name);
-
-      } else if(isImage) {
-        const base64 = await toBase64(file);
-        const imgMime = type || "image/jpeg";
+        setFileLabel(`🎙️ ${file.name}`);
+      } else if(isImage){
+        const b64=await toBase64(file);
+        const mime=type||"image/jpeg";
+        docRef.current={type:"image",b64,mime};
         setContent(`[Image : ${file.name}]`);
-        sessionStorage.setItem("lastDocB64", base64);
-        sessionStorage.setItem("lastDocType", "image");
-        sessionStorage.setItem("lastDocMime", imgMime);
-        sessionStorage.setItem("lastDocName", file.name);
-
+        setFileLabel(`🖼️ ${file.name}`);
       } else {
-        setContent(`[Format non supporté : ${file.name}]
-
-Formats acceptés :
-· Documents : PDF, Word (.docx), TXT, Markdown
-· Audio : MP3, WAV, M4A, OGG, FLAC, AAC
-· Images : JPG, PNG, GIF, WebP
-
-Pour la vidéo, exportez la piste audio ou collez le transcript ci-dessous.`);
+        setContent(`[Format non supporté : ${file.name}]\n\nFormats acceptés :\n· Documents : PDF, Word (.docx), TXT, Markdown\n· Audio : MP3, WAV, M4A, OGG, FLAC, AAC\n· Images : JPG, PNG, GIF, WebP\n\nPour la vidéo, exportez la piste audio ou collez le transcript.`);
       }
-
-    } catch(e) {
-      setContent(`[Erreur de lecture : ${e.message}]
-
-Essayez de copier-coller le contenu directement.`);
+    } catch(e){
+      setContent(`[Erreur de lecture : ${e.message}]\n\nEssayez de copier-coller le contenu directement.`);
     }
     setFileLoading(false);
   };
-;
 
   const analyze=async()=>{
     if(!content.trim()) return;
     setLoading(true);setResult(null);setError(null);
     const sys=`Tu es ${persona.name}, ${persona.age}, ${persona.job}, vivant à ${persona.city||"Afrique/Maghreb"}.
-Type d'audience : ${persona.type}. Bio : ${persona.bio}
+Type d\'audience : ${persona.type}. Bio : ${persona.bio}
 Médias : ${persona.medias?.join(", ")}. Intérêts : ${persona.interests?.join(", ")}.
 Frustrations : ${persona.frustrations?.join(", ")}. Accroches : ${persona.hooks?.join(", ")}.
 Déclencheurs : ${persona.triggers?.join(", ")}.
 Revenus : ${persona.marketData?.revenu||"non précisé"}. Forfait : ${persona.marketData?.forfait||"non précisé"}.
 
-Évalue ce contenu UNIQUEMENT depuis ton point de vue authentique. Sois précis, factuel, ancré dans ton profil réel. Pas de généralités — cite des éléments concrets du contenu.
+Évalue ce contenu UNIQUEMENT depuis ton point de vue authentique. Sois précis, factuel, ancré dans ton profil réel. Cite des éléments concrets du contenu.
 
 Réponds UNIQUEMENT en JSON valide sans backticks :
-{"score":<0-100>,"verdict":"<titre percutant max 8 mots>","ressenti":{"accroche":"<1-2 phrases : les premières secondes/lignes t'ont-elles capturé ? Cite un élément concret>","identification":"<1-2 phrases : tu te reconnais ? Les personnages, situations, codes culturels sonnent-ils juste ?>","friction":"<1-2 phrases : ce qui accroche, dérange ou sonne faux — direct, ancré dans ton profil>","intention":"<1-2 phrases : tu continuerais ? Tu partagerais avec qui — ou pourquoi tu décrocherais>"},"dimensions":{"Pertinence":<0-100>,"Format":<0-100>,"Ton":<0-100>,"Engagement":<0-100>},"recommandations":["<conseil concret ancré dans ton profil 1>","<conseil 2>","<conseil 3>"]}`;
+{"score":<0-100>,"verdict":"<titre percutant max 8 mots>","ressenti":{"accroche":"<1-2 phrases : les premières secondes/lignes t\'ont-elles capturé ? Cite un élément concret>","identification":"<1-2 phrases : tu te reconnais ? Personnages, situations, codes culturels ?>","friction":"<1-2 phrases : ce qui accroche, dérange ou sonne faux — direct, ancré dans ton profil>","intention":"<1-2 phrases : tu continuerais ? Tu partagerais avec qui — ou pourquoi tu décrocherais>"},"dimensions":{"Pertinence":<0-100>,"Format":<0-100>,"Ton":<0-100>,"Engagement":<0-100>},"recommandations":["<conseil concret 1>","<conseil 2>","<conseil 3>"]}`;
+
     try{
-      const docB64=sessionStorage.getItem("lastDocB64");
-      const docType=sessionStorage.getItem("lastDocType");
-      const docMime=sessionStorage.getItem("lastDocMime")||"";
-      const docName=sessionStorage.getItem("lastDocName")||"fichier";
       let doc=null;
-
-      if(docB64&&docType==="pdf") {
-        doc={type:"document",source:{type:"base64",media_type:"application/pdf",data:docB64}};
-      } else if(docB64&&docType==="audio") {
-        doc={type:"document",source:{type:"base64",media_type:docMime,data:docB64}};
-      } else if(docB64&&docType==="image") {
-        doc={type:"image",source:{type:"base64",media_type:docMime,data:docB64}};
+      const d=docRef.current;
+      if(d){
+        if(d.type==="pdf") doc={type:"document",source:{type:"base64",media_type:d.mime,data:d.b64}};
+        else if(d.type==="audio") doc={type:"document",source:{type:"base64",media_type:d.mime,data:d.b64}};
+        else if(d.type==="image") doc={type:"image",source:{type:"base64",media_type:d.mime,data:d.b64}};
       }
-
-      const userMsg = docType==="audio"
-        ? `Transcris et analyse ce fichier audio "${docName}" depuis le point de vue de ${persona.name} :
-
-${content}`
-        : docType==="image"
-        ? `Analyse cette image "${docName}" comme contenu éditorial depuis le point de vue de ${persona.name} :
-
-${content}`
-        : `Analyse ce contenu :\n\n${content}`;
-
-      const text=await callClaude(sys, userMsg, doc);
+      const userMsg=d?.type==="audio"
+        ?`Transcris et analyse ce fichier audio depuis le point de vue de ${persona.name} :\n\n${content}`
+        :d?.type==="image"
+        ?`Analyse cette image comme contenu éditorial depuis le point de vue de ${persona.name} :\n\n${content}`
+        :`Analyse ce contenu :\n\n${content}`;
+      const text=await callClaude(sys,userMsg,doc);
       setResult(JSON.parse(text.replace(/\`\`\`json|\`\`\`/g,"").trim()));
-    }catch(e){setError("Erreur d'analyse. Vérifiez la connexion.");}
+    }catch(e){setError("Erreur d\'analyse. Vérifiez la connexion.");}
     finally{setLoading(false);}
   };
 
   const crossRecs=result?allPersonas.filter(p=>p.id!==persona.id).slice(0,3):[];
-  const handleCrossSelect=(id)=>{
-    sessionStorage.setItem("crossTestContent",content);
-    onSelectPersona(id);
-  };
+  const handleCrossSelect=(id)=>{onSelectPersona(id,content);};
 
   return <div style={{height:"100%",overflowY:"auto",background:"#fff"}}>
     <div style={{padding:"24px 32px",borderBottom:"1px solid #f1f5f9",display:"flex",alignItems:"center",gap:12}}>
@@ -511,20 +469,21 @@ ${content}`
     <div style={{padding:"24px 32px"}}>
       <div style={{marginBottom:12}}>
         <div style={{fontSize:11,fontWeight:600,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:8}}>Contenu à tester</div>
-        <textarea value={content} onChange={e=>setContent(e.target.value)}
+        <textarea value={content} onChange={e=>{setContent(e.target.value);docRef.current=null;setFileLabel(null);}}
           placeholder={`Collez un synopsis, script, concept, article, transcript...\n\n${persona.name} va analyser depuis son point de vue authentique.`}
           style={{width:"100%",minHeight:120,background:"#f8fafc",border:"1px solid #e2e8f0",borderRadius:10,color:"#374151",padding:"12px",fontSize:13,outline:"none",resize:"vertical",lineHeight:1.6,boxSizing:"border-box",fontFamily:"inherit"}}/>
       </div>
+      {fileLabel&&<div style={{marginBottom:10,fontSize:12,color:"#0369a1",background:"#f0f9ff",border:"1px solid #bae6fd",borderRadius:8,padding:"6px 12px",display:"inline-block"}}>✓ {fileLabel}</div>}
       <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:16,flexWrap:"wrap"}}>
         <label style={{display:"inline-flex",alignItems:"center",gap:6,background:"#f8fafc",border:"1px solid #e2e8f0",color:"#374151",padding:"6px 12px",borderRadius:8,cursor:"pointer",fontSize:12,fontWeight:500}}>
           {fileLoading?"Lecture...":"📎 Fichier (doc, audio, image)"}
           <input type="file" accept=".pdf,.docx,.txt,.md,.mp3,.wav,.m4a,.ogg,.flac,.aac,.webm,.jpg,.jpeg,.png,.gif,.webp" disabled={fileLoading} onChange={e=>e.target.files[0]&&readFile(e.target.files[0])} style={{display:"none"}}/>
         </label>
-        {[{label:"📝 Synopsis",v:"Synopsis d'une série verticale africaine de 8 épisodes de 2 minutes sur l'amour à Dakar entre deux jeunes professionnels."},
-          {label:"🎬 Script",v:"Script pilote — Scène d'ouverture : une jeune femme reçoit un message de son ex le jour de son mariage. Format vertical, 90 secondes."},
-          {label:"🎙️ Podcast",v:"Concept de podcast : 5 minutes d'histoires vraies sur les relations amoureuses en Afrique urbaine, narré par une femme de 30 ans."},
-          {label:"📱 TikTok",v:"Série TikTok : 60 secondes par épisode, romance lycée au Maroc, cliffhanger à chaque fin d'épisode, musique trending."},
-        ].map(ex=><button key={ex.label} onClick={()=>setContent(ex.v)} style={{background:"#f8fafc",border:"1px solid #e2e8f0",color:"#64748b",padding:"6px 11px",borderRadius:20,cursor:"pointer",fontSize:11,fontWeight:500}}>{ex.label}</button>)}
+        {[{label:"📝 Synopsis",v:"Synopsis d\'une série verticale africaine de 8 épisodes de 2 minutes sur l\'amour à Dakar entre deux jeunes professionnels."},
+          {label:"🎬 Script",v:"Script pilote — Scène d\'ouverture : une jeune femme reçoit un message de son ex le jour de son mariage. Format vertical, 90 secondes."},
+          {label:"🎙️ Podcast",v:"Concept de podcast : 5 minutes d\'histoires vraies sur les relations amoureuses en Afrique urbaine, narré par une femme de 30 ans."},
+          {label:"📱 TikTok",v:"Série TikTok : 60 secondes par épisode, romance lycée au Maroc, cliffhanger à chaque fin d\'épisode, musique trending."},
+        ].map(ex=><button key={ex.label} onClick={()=>{setContent(ex.v);docRef.current=null;setFileLabel(null);}} style={{background:"#f8fafc",border:"1px solid #e2e8f0",color:"#64748b",padding:"6px 11px",borderRadius:20,cursor:"pointer",fontSize:11,fontWeight:500}}>{ex.label}</button>)}
       </div>
       <button onClick={analyze} disabled={loading||!content.trim()} style={{width:"100%",background:loading||!content.trim()?"#f1f5f9":"#0f172a",border:"none",color:loading||!content.trim()?"#9ca3af":"#fff",padding:"12px",borderRadius:10,cursor:loading||!content.trim()?"not-allowed":"pointer",fontWeight:600,fontSize:14,marginBottom:20}}>
         {loading?`${persona.name} analyse...`:`Analyser avec ${persona.name} →`}
@@ -554,7 +513,6 @@ ${content}`
               <div style={{paddingLeft:20,color:"#374151",fontSize:13,lineHeight:1.65,fontStyle:"italic"}}>"{result.ressenti[key]}"</div>
             </div>
           ))}
-          {!result.ressenti&&result.reaction&&<div style={{borderLeft:`3px solid ${persona.typeColor}`,paddingLeft:14,color:"#374151",fontSize:13,lineHeight:1.7,fontStyle:"italic"}}>"{result.reaction}"</div>}
         </div>
         <div style={{background:"#f8fafc",borderRadius:12,padding:"16px",marginBottom:12,border:"1px solid #f1f5f9"}}>
           <div style={{fontSize:11,fontWeight:600,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:12}}>Analyse détaillée</div>
@@ -569,7 +527,7 @@ ${content}`
         </div>
         {crossRecs.length>0&&<div style={{background:"#f0f9ff",borderRadius:12,padding:"16px",border:"1px solid #bae6fd"}}>
           <div style={{fontSize:11,fontWeight:600,color:"#0369a1",textTransform:"uppercase",letterSpacing:1,marginBottom:12}}>
-            {result.score<50?"Ce contenu pourrait mieux correspondre à...":"Comparez avec d'autres personas"}
+            {result.score<50?"Ce contenu pourrait mieux correspondre à...":"Comparez avec d\'autres personas"}
           </div>
           {crossRecs.map(p=><button key={p.id} onClick={()=>handleCrossSelect(p.id)} style={{display:"flex",alignItems:"center",gap:10,background:"#fff",border:"1px solid #e0f2fe",borderRadius:8,padding:"8px 12px",cursor:"pointer",width:"100%",marginBottom:6,textAlign:"left"}}>
             <Avatar persona={p} size={30}/>
@@ -581,6 +539,7 @@ ${content}`
     </div>
   </div>;
 }
+
 
 // ─── UPDATE PANEL ───
 function UpdatePanel({persona,onUpdate}) {
@@ -759,6 +718,7 @@ function SpaceWorkspace({space,personas,onUpdateSpace,onBack,onUpdatePersona,onD
   const [selected,setSelected]=useState(null);
   const [mode,setMode]=useState("detail");
   const [search,setSearch]=useState("");
+  const [crossContent,setCrossContent]=useState("");
   const spacePersonas=personas.filter(p=>space.personaIds?.includes(p.id));
   const filtered=spacePersonas.filter(p=>{
     const q=search.toLowerCase();
@@ -803,7 +763,7 @@ function SpaceWorkspace({space,personas,onUpdateSpace,onBack,onUpdatePersona,onD
         </div>
         <div style={{overflowY:"auto",flex:1,padding:"8px"}}>
           {filtered.length===0&&<div style={{color:"#cbd5e1",fontSize:13,textAlign:"center",padding:24}}>Aucun persona</div>}
-          {filtered.map(p=><PersonaCard key={p.id} persona={p} selected={selected===p.id} onClick={()=>{setSelected(p.id);setMode("detail");}}/>)}
+          {filtered.map(p=><PersonaCard key={p.id} persona={p} selected={selected===p.id} onClick={()=>{setCrossContent("");setSelected(p.id);setMode("detail");}}/>)}
         </div>
         <div style={{padding:"8px 12px",borderTop:"1px solid #f1f5f9",color:"#cbd5e1",fontSize:10,background:"#fafafa"}}>{spacePersonas.length} personas</div>
       </div>
@@ -814,7 +774,7 @@ function SpaceWorkspace({space,personas,onUpdateSpace,onBack,onUpdatePersona,onD
           initial={{id:"",name:"",emoji:"👤",age:"",city:"",job:"",type:"Curieux",typeColor:"#b45309",chapter:space.name,bio:"",medias:[],interests:[],frustrations:[],hooks:[],triggers:[],marketData:{revenu:"",forfait:"",adoption:"",genres:"",source:""},notes:"",project:space.name,tags:[]}}
           onSave={addPersona} onCancel={()=>setMode(selected?"detail":"welcome")}/>}
         {mode==="edit"&&selectedPersona&&<EditForm initial={selectedPersona} onSave={p=>{onUpdatePersona(p);setMode("detail");}} onCancel={()=>setMode("detail")}/>}
-        {mode==="test"&&selectedPersona&&<TestPanel persona={selectedPersona} allPersonas={spacePersonas} onSelectPersona={id=>{setSelected(id);setMode("test");}}/>}
+        {mode==="test"&&selectedPersona&&<TestPanel persona={selectedPersona} allPersonas={spacePersonas} initialContent={crossContent} onSelectPersona={(id,savedContent)=>{setCrossContent(savedContent||"");setSelected(id);setMode("test");}}/>}
         {mode==="update"&&selectedPersona&&<UpdatePanel persona={selectedPersona} onUpdate={p=>{onUpdatePersona(p);setMode("detail");}}/>}
         {mode==="detail"&&selectedPersona&&<DetailView persona={selectedPersona} onEdit={()=>setMode("edit")} onDelete={()=>{removePersona(selectedPersona.id);onDeletePersona(selectedPersona.id);}} onTest={()=>setMode("test")} onUpdate={()=>setMode("update")}/>}
         {(mode==="detail"||mode==="welcome")&&!selectedPersona&&<div style={{height:"100%",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,background:"#fff"}}>
