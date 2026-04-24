@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 
-const STORAGE_KEY = "personalab-v4";
+const STORAGE_KEY = "personalab-v5";
 
 const PHOTO_URLS = {
   aicha: "data:image/jpeg;base64,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",
@@ -17,6 +17,7 @@ const PHOTO_URLS = {
   djibril: "https://images.unsplash.com/photo-1504257432389-52343af06ae3?w=300&q=70"
 };
 
+
 const DEFAULT_PERSONAS = [
   { id:"yannick",name:"Yannick",emoji:"🎧",age:"48 ans",city:"Cannes",job:"Opticien · BTS · CSP moyenne",type:"Éloigné",typeColor:"#e8401c",chapter:"TRACE",bio:"Yannick a grandi avec le hip-hop. Il a regardé TRACE TV tous les jours pendant 20 ans. Aujourd'hui, il suit encore la culture urban, mais commence à décrocher des nouveaux artistes. Il déteste l'autotune, regrette l'engagement des années 90-2000.",medias:["Facebook","Skyrock","Nova","TRACE Urban","Le Mouv'","Youtube","Netflix"],interests:["Culture hip-hop","BD","Collection CD & sneakers"],frustrations:["N'apprécie plus tous les artistes TRACE Urban","Se sent vieux","Autotune omniprésent"],hooks:["Nostalgie (goldies)","Grandes figures du rap","Playlist Rewind"],triggers:["Documentaire grandes figures","Podcasts artistes","Légendes du hip-hop"],marketData:{revenu:"~2 000-2 500€/mois",forfait:"Box internet + TV standard",adoption:"Faible — contenu nostalgique requis",genres:"Hip-hop old school (90%), Documentaires (75%), Soul/R&B (50%)",source:"Repositionnement éditorial TRACE"},notes:"",project:"TRACE",tags:["TRACE","Éloigné","Hip-hop","Nostalgie"] },
   { id:"theo",name:"Théo",emoji:"📱",age:"22 ans",city:"Lyon",job:"Étudiant en communication",type:"Curieux",typeColor:"#f5a623",chapter:"TRACE",bio:"Théo est hyperconnecté, consomme du contenu en flux continu sur TikTok et YouTube. Il connaît TRACE mais n'est pas encore ancré. Il est attiré par la nouveauté, les formats courts, les artistes émergents.",medias:["TikTok","Instagram","YouTube","Spotify","TRACE Urban (occasionnel)"],interests:["Musique émergente","Mode urbaine","Gaming","Podcasts culture"],frustrations:["Chaînes TV classiques dépassées","Trop de pub","Manque d'authenticité"],hooks:["Artistes en devenir","Formats courts","Exclusivités"],triggers:["Clips inédits","Interviews backstage","Playlists tendance"],marketData:{revenu:"~300-600€/mois (étudiant)",forfait:"20-50 Go/mois, Spotify Premium",adoption:"Moyenne — formats courts + exclusivités",genres:"Rap FR émergent (80%), Afrobeats (65%), Culture urbaine (70%)",source:"Repositionnement éditorial TRACE"},notes:"",project:"TRACE",tags:["TRACE","Curieux","Gen Z","Digital-native"] },
@@ -32,643 +33,730 @@ const DEFAULT_PERSONAS = [
   { id:"karim",name:"Karim",emoji:"💻",age:"26 ans",city:"Casablanca, Maroc",job:"Développeur informatique · Célibataire · Vit chez ses parents",type:"Curieux",typeColor:"#f5a623",chapter:"Vertical Dramas",bio:"Développeur à Casablanca, technophile et exigeant. Consomme pendant pauses boulot ou gaming. Cherche des storylines avec twists et suspense, bonne qualité visuelle.",medias:["YouTube","Netflix","Reddit","Discord","TikTok"],interests:["Storylines innovantes","Suspense","Qualité visuelle","Gaming","Tech"],frustrations:["Mauvaise qualité technique","Pas de twists","Romance sans fond"],hooks:["Twists narratifs","Qualité VFX/son","Débat Reddit/Discord"],triggers:["Format 2-3 min pause/gaming","Partage communauté en ligne","Qualité premium"],marketData:{revenu:"€200-300/mois",forfait:"15 Go/mois (5% du revenu)",adoption:"85%",genres:"Romance jeunesse (95%), Comédie romantique masculine (90%), Drama lycée/fac (80%)",source:"Étude GHAF Media — Séries Verticales, Janvier 2026 (confidentiel)"},notes:"",project:"GHAF",tags:["GHAF","Vertical drama","Maroc","Curieux"] }
 ];
 
+
 const CHAPTERS = ["Tous","TRACE","Vertical Dramas"];
 const TYPE_OPTIONS = [
-  {label:"Fidèle",color:"#27ae60"},{label:"Curieux",color:"#f5a623"},{label:"Curieuse",color:"#f5a623"},
-  {label:"Éloigné",color:"#e8401c"},{label:"Éloignée",color:"#e8401c"},{label:"Appétente",color:"#2e7d32"},
-  {label:"Prospect",color:"#3498db"},{label:"Ambassadeur",color:"#9b59b6"},
+  {label:"Fidèle",color:"#1d6f42"},{label:"Curieux",color:"#b45309"},
+  {label:"Curieuse",color:"#b45309"},{label:"Éloigné",color:"#c0392b"},
+  {label:"Éloignée",color:"#c0392b"},{label:"Appétente",color:"#1d6f42"},
+  {label:"Prospect",color:"#1a56db"},{label:"Ambassadeur",color:"#6c2bd9"},
 ];
 
-// ─── API CLAUDE ───
-async function callClaude(system, userMsg) {
-  const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
-      "anthropic-dangerous-direct-browser-access": "true"
-    },
-    body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 1500,
-      system,
-      messages: [{ role: "user", content: userMsg }]
-    })
-  });
-  if (!res.ok) throw new Error(`API Error ${res.status}`);
-  const data = await res.json();
-  return data.content.map(i => i.text || "").join("");
-}
-
 // ─── STORAGE ───
-const load = () => {
-  try { const r = localStorage.getItem(STORAGE_KEY); return r ? JSON.parse(r) : null; } catch { return null; }
-};
-const persist = (personas) => {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ personas })); } catch {}
-};
+const loadData = () => { try { const r=localStorage.getItem(STORAGE_KEY); return r?JSON.parse(r):null; } catch{return null;} };
+const saveData = (personas) => { try{localStorage.setItem(STORAGE_KEY,JSON.stringify({personas}));}catch{} };
 
-// ─── COMPONENTS ───
-function TagInput({ value=[], onChange, placeholder }) {
-  const [input, setInput] = useState("");
-  const add = e => { if ((e.key==="Enter"||e.key===",") && input.trim()) { e.preventDefault(); if (!value.includes(input.trim())) onChange([...value, input.trim()]); setInput(""); } };
-  return <div style={{display:"flex",flexWrap:"wrap",gap:5,padding:"7px 10px",background:"#0d0d0d",border:"1px solid #252525",borderRadius:8,minHeight:40}}>
-    {value.map((t,i)=><span key={i} style={{background:"#1a1a1a",color:"#aaa",padding:"2px 9px",borderRadius:20,fontSize:12,display:"flex",alignItems:"center",gap:5}}>{t}<span onClick={()=>onChange(value.filter((_,j)=>j!==i))} style={{cursor:"pointer",color:"#555"}}>×</span></span>)}
-    <input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={add} placeholder={placeholder} style={{background:"transparent",border:"none",outline:"none",color:"#fff",fontSize:12,minWidth:100,flex:1}}/>
+// ─── API CLAUDE ───
+async function callClaude(system, userMsg, imageContent=null) {
+  const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
+  const content = imageContent
+    ? [imageContent, {type:"text",text:userMsg}]
+    : userMsg;
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method:"POST",
+    headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+    body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:2000,system,messages:[{role:"user",content}]})
+  });
+  if(!res.ok) throw new Error(`API ${res.status}`);
+  const data = await res.json();
+  return data.content.map(i=>i.text||"").join("");
+}
+
+// ─── SMALL COMPONENTS ───
+function TagInput({value=[],onChange,placeholder}) {
+  const [inp,setInp]=useState("");
+  const add=e=>{if((e.key==="Enter"||e.key===",")&&inp.trim()){e.preventDefault();if(!value.includes(inp.trim()))onChange([...value,inp.trim()]);setInp("");}};
+  return <div style={{display:"flex",flexWrap:"wrap",gap:5,padding:"8px 10px",background:"#f9fafb",border:"1px solid #e5e7eb",borderRadius:8,minHeight:40}}>
+    {value.map((t,i)=><span key={i} style={{background:"#fff",border:"1px solid #e5e7eb",color:"#374151",padding:"2px 10px",borderRadius:20,fontSize:12,display:"flex",alignItems:"center",gap:5}}>
+      {t}<span onClick={()=>onChange(value.filter((_,j)=>j!==i))} style={{cursor:"pointer",color:"#9ca3af",fontWeight:700}}>×</span>
+    </span>)}
+    <input value={inp} onChange={e=>setInp(e.target.value)} onKeyDown={add} placeholder={placeholder}
+      style={{background:"transparent",border:"none",outline:"none",color:"#374151",fontSize:13,minWidth:100,flex:1}}/>
   </div>;
 }
 
-function PersonaAvatar({ persona, size=42 }) {
-  const url = persona.photo || PHOTO_URLS[persona.id];
-  const [err, setErr] = useState(false);
-  if (url && !err) return <img src={url} alt={persona.name} onError={()=>setErr(true)} style={{width:size,height:size,borderRadius:"50%",objectFit:"cover",objectPosition:"top",border:`2px solid ${persona.typeColor}55`,flexShrink:0}}/>;
-  return <div style={{width:size,height:size,borderRadius:"50%",background:"#1a1a1a",display:"flex",alignItems:"center",justifyContent:"center",fontSize:size*0.45,flexShrink:0}}>{persona.emoji}</div>;
+function Avatar({persona,size=40}) {
+  const url=persona.photo||PHOTO_URLS[persona.id];
+  const [err,setErr]=useState(false);
+  if(url&&!err) return <img src={url} onError={()=>setErr(true)} alt={persona.name}
+    style={{width:size,height:size,borderRadius:"50%",objectFit:"cover",objectPosition:"top",flexShrink:0}}/>;
+  return <div style={{width:size,height:size,borderRadius:"50%",background:"#f3f4f6",display:"flex",alignItems:"center",justifyContent:"center",fontSize:size*0.44,flexShrink:0}}>{persona.emoji||"👤"}</div>;
 }
 
-function ScoreCircle({ score, color }) {
-  const r=36, circ=2*Math.PI*r, dash=(score/100)*circ;
-  return <div style={{position:"relative",width:90,height:90,flexShrink:0}}>
-    <svg width="90" height="90" viewBox="0 0 90 90" style={{transform:"rotate(-90deg)"}}>
-      <circle cx="45" cy="45" r={r} fill="none" stroke="#1a1a1a" strokeWidth="7"/>
-      <circle cx="45" cy="45" r={r} fill="none" stroke={color} strokeWidth="7" strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"/>
+function TypeBadge({type,color,small=false}) {
+  return <span style={{background:color+"15",color,fontSize:small?10:11,padding:small?"2px 7px":"3px 10px",borderRadius:20,fontWeight:600,letterSpacing:0.2}}>{type}</span>;
+}
+
+function ScoreRing({score,color,size=80}) {
+  const r=size*0.38,c=2*Math.PI*r,dash=(score/100)*c;
+  return <div style={{position:"relative",width:size,height:size,flexShrink:0}}>
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{transform:"rotate(-90deg)"}}>
+      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#f3f4f6" strokeWidth={size*0.08}/>
+      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={color} strokeWidth={size*0.08} strokeDasharray={`${dash} ${c}`} strokeLinecap="round"/>
     </svg>
-    <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",textAlign:"center"}}>
-      <div style={{fontFamily:"'Playfair Display',serif",fontSize:24,fontWeight:900,color,lineHeight:1}}>{score}</div>
-      <div style={{fontSize:9,color:"#555",letterSpacing:1}}>/100</div>
+    <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",textAlign:"center",lineHeight:1}}>
+      <div style={{fontFamily:"'SF Pro Display','Helvetica Neue',sans-serif",fontSize:size*0.28,fontWeight:700,color}}>{score}</div>
+      <div style={{fontSize:size*0.13,color:"#9ca3af"}}>/100</div>
     </div>
   </div>;
 }
 
-function DimBar({ label, value }) {
-  const c = value>=70?"#27ae60":value>=40?"#f5a623":"#e8401c";
+function DimBar({label,value}) {
+  const c=value>=70?"#16a34a":value>=40?"#d97706":"#dc2626";
   return <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
-    <div style={{fontSize:12,width:85,color:"#777",flexShrink:0}}>{label}</div>
-    <div style={{flex:1,height:5,background:"#1a1a1a",borderRadius:3,overflow:"hidden"}}>
-      <div style={{width:`${value}%`,height:"100%",background:c,borderRadius:3,transition:"width 0.8s ease"}}/>
+    <div style={{fontSize:12,color:"#6b7280",width:90,flexShrink:0}}>{label}</div>
+    <div style={{flex:1,height:4,background:"#f3f4f6",borderRadius:4,overflow:"hidden"}}>
+      <div style={{width:`${value}%`,height:"100%",background:c,borderRadius:4,transition:"width 0.8s ease"}}/>
     </div>
-    <div style={{fontSize:11,fontWeight:700,width:26,textAlign:"right",color:c}}>{value}</div>
+    <div style={{fontSize:11,fontWeight:700,color:c,width:24,textAlign:"right"}}>{value}</div>
   </div>;
 }
 
-// ─── PERSONA CARD (sidebar) ───
-function PersonaCard({ persona, onClick, selected }) {
-  return <div onClick={onClick} style={{padding:"11px 13px",borderRadius:10,background:selected?"#141428":"#0f0f0f",border:`1px solid ${selected?persona.typeColor:"#1a1a1a"}`,cursor:"pointer",transition:"all 0.15s",marginBottom:5}}>
-    <div style={{display:"flex",alignItems:"center",gap:9}}>
-      <PersonaAvatar persona={persona} size={40}/>
+// ─── SIDEBAR CARD ───
+function PersonaCard({persona,onClick,selected}) {
+  return <div onClick={onClick} style={{
+    padding:"10px 12px",borderRadius:10,cursor:"pointer",transition:"all 0.15s",
+    background:selected?"#f0f9ff":"#fff",
+    border:`1px solid ${selected?"#bae6fd":"#f3f4f6"}`,
+    boxShadow:selected?"0 1px 3px rgba(0,0,0,0.06)":"none"
+  }}>
+    <div style={{display:"flex",alignItems:"center",gap:10}}>
+      <Avatar persona={persona} size={38}/>
       <div style={{flex:1,minWidth:0}}>
-        <div style={{color:"#fff",fontWeight:700,fontSize:13}}>{persona.name}</div>
-        <div style={{color:"#444",fontSize:11,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{persona.age}{persona.city?` · ${persona.city}`:""}</div>
+        <div style={{fontWeight:600,fontSize:13,color:"#111827"}}>{persona.name}</div>
+        <div style={{fontSize:11,color:"#9ca3af",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{persona.age}{persona.city?` · ${persona.city}`:""}</div>
       </div>
-      <span style={{background:persona.typeColor+"22",color:persona.typeColor,fontSize:9,padding:"2px 7px",borderRadius:20,fontWeight:700,flexShrink:0}}>{persona.type}</span>
+      <TypeBadge type={persona.type} color={persona.typeColor} small/>
     </div>
   </div>;
 }
 
-// ─── TEST PANEL ───
-function TestPanel({ persona }) {
-  const [content, setContent] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
-  const [error, setError] = useState(null);
-  const scoreColor = result ? (result.score>=70?"#27ae60":result.score>=40?"#f5a623":"#e8401c") : "#fff";
-
-  const analyze = async () => {
-    if (!content.trim()) return;
-    setLoading(true); setResult(null); setError(null);
-    const sys = `Tu es ${persona.name}, ${persona.age}, ${persona.job}, vivant à ${persona.city||"en Afrique/Maghreb"}.
-Tu fais partie des "${persona.type}" dans une étude d'audience média.
-Bio : ${persona.bio}
-Médias consommés : ${persona.medias.join(", ")}.
-Intérêts : ${persona.interests.join(", ")}.
-Frustrations : ${persona.frustrations.join(", ")}.
-Accroches : ${persona.hooks.join(", ")}.
-Déclencheurs : ${persona.triggers.join(", ")}.
-
-On te soumet un contenu média (script, synopsis, pitch, article, format...). Évalue-le UNIQUEMENT depuis ton point de vue authentique de persona.
-Réponds UNIQUEMENT en JSON valide sans backticks ni markdown, format exact :
-{"score":<0-100>,"verdict":"<titre court max 8 mots>","reaction":"<ta réaction 1ère personne 2-3 phrases naturelles et authentiques>","dimensions":{"Pertinence":<0-100>,"Format":<0-100>,"Ton":<0-100>,"Engagement":<0-100>},"recommandations":["<conseil concret 1>","<conseil concret 2>","<conseil concret 3>"]}`;
-    try {
-      const text = await callClaude(sys, `Analyse ce contenu :
-
-${content}`);
-      const clean = text.replace(/```json|```/g,"").trim();
-      setResult(JSON.parse(clean));
-    } catch(e) { setError("Erreur d'analyse. Vérifiez votre connexion."); }
-    finally { setLoading(false); }
-  };
-
-  return <div style={{padding:"24px 28px",height:"100%",overflowY:"auto"}}>
-    <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:20}}>
-      <PersonaAvatar persona={persona} size={48}/>
-      <div>
-        <div style={{color:"#fff",fontFamily:"'Playfair Display',serif",fontSize:20,fontWeight:700}}>{persona.name}</div>
-        <div style={{color:"#555",fontSize:12}}>{persona.job} · {persona.age}</div>
-      </div>
-      <span style={{marginLeft:"auto",background:persona.typeColor,color:"#fff",fontSize:11,padding:"4px 12px",borderRadius:20,fontWeight:700}}>{persona.type}</span>
-    </div>
-
-    <div style={{marginBottom:16}}>
-      <div style={{color:"#444",fontSize:10,textTransform:"uppercase",letterSpacing:1,marginBottom:8}}>Contenu à tester</div>
-      <textarea value={content} onChange={e=>setContent(e.target.value)} placeholder={`Collez ici un synopsis, script, article, pitch, description de format...
-${persona.name} va l'analyser depuis son point de vue.`}
-        style={{width:"100%",minHeight:140,background:"#0d0d0d",border:"1px solid #252525",borderRadius:10,color:"#ccc",padding:"14px",fontSize:13,outline:"none",resize:"vertical",lineHeight:1.6,boxSizing:"border-box",fontFamily:"inherit"}}/>
-    </div>
-
-    <div style={{display:"flex",gap:8,marginBottom:24}}>
-      {["Synopsis court","Script pilote","Article presse","Pitch format"].map(ex=>(
-        <button key={ex} onClick={()=>setContent(`[Exemple : ${ex}]
-Description fictive de contenu pour tester la réaction de ${persona.name}.`)}
-          style={{background:"#0d0d0d",border:"1px solid #252525",color:"#555",padding:"5px 12px",borderRadius:20,cursor:"pointer",fontSize:11}}>
-          {ex}
-        </button>
-      ))}
-    </div>
-
-    <button onClick={analyze} disabled={loading||!content.trim()} style={{width:"100%",background:loading?"#1a1a1a":persona.typeColor,border:"none",color:"#fff",padding:"13px",borderRadius:10,cursor:loading||!content.trim()?"not-allowed":"pointer",fontWeight:700,fontSize:14,marginBottom:24,transition:"all 0.2s",opacity:!content.trim()?0.4:1}}>
-      {loading?`${persona.name} analyse votre contenu...`:`Analyser avec ${persona.name} →`}
-    </button>
-
-    {error && <div style={{background:"#1a0808",border:"1px solid #e8401c33",borderRadius:10,padding:"14px",color:"#e8401c",fontSize:13,marginBottom:16}}>{error}</div>}
-
-    {result && <div style={{animation:"fadeIn 0.4s ease"}}>
-      <div style={{background:"#0d0d0d",border:`1px solid ${scoreColor}33`,borderRadius:12,padding:"20px",marginBottom:16,display:"flex",gap:20,alignItems:"center"}}>
-        <ScoreCircle score={result.score} color={scoreColor}/>
-        <div>
-          <div style={{color:scoreColor,fontFamily:"'Playfair Display',serif",fontSize:18,fontWeight:700,marginBottom:6}}>{result.verdict}</div>
-          <div style={{color:"#666",fontSize:12}}>Score de résonance avec {persona.name}</div>
-        </div>
-      </div>
-
-      <div style={{background:"#0d0d0d",border:"1px solid #1a1a1a",borderRadius:12,padding:"18px",marginBottom:16}}>
-        <div style={{color:"#555",fontSize:10,textTransform:"uppercase",letterSpacing:1,marginBottom:10}}>La réaction de {persona.name}</div>
-        <div style={{background:"#111",borderLeft:`3px solid ${persona.typeColor}`,padding:"12px 16px",borderRadius:"0 8px 8px 0",color:"#ccc",fontSize:14,lineHeight:1.7,fontStyle:"italic"}}>
-          "{result.reaction}"
-        </div>
-      </div>
-
-      <div style={{background:"#0d0d0d",border:"1px solid #1a1a1a",borderRadius:12,padding:"18px",marginBottom:16}}>
-        <div style={{color:"#555",fontSize:10,textTransform:"uppercase",letterSpacing:1,marginBottom:14}}>Analyse détaillée</div>
-        {Object.entries(result.dimensions).map(([k,v])=><DimBar key={k} label={k} value={v}/>)}
-      </div>
-
-      <div style={{background:"#0d0d0d",border:"1px solid #1a1a1a",borderRadius:12,padding:"18px"}}>
-        <div style={{color:"#555",fontSize:10,textTransform:"uppercase",letterSpacing:1,marginBottom:14}}>Pour mieux toucher {persona.name}</div>
-        {result.recommandations.map((r,i)=>(
-          <div key={i} style={{display:"flex",gap:12,marginBottom:10,alignItems:"flex-start"}}>
-            <div style={{background:persona.typeColor,color:"#fff",width:22,height:22,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,flexShrink:0}}>{i+1}</div>
-            <div style={{color:"#ccc",fontSize:13,lineHeight:1.6}}>{r}</div>
+// ─── WELCOME SCREEN ───
+function WelcomeScreen({personas,onSelect}) {
+  const featured = personas.slice(0,6);
+  return <div style={{height:"100%",overflowY:"auto",background:"#fff"}}>
+    {/* Hero */}
+    <div style={{background:"linear-gradient(135deg,#f8fafc 0%,#f0f9ff 100%)",borderBottom:"1px solid #f1f5f9",padding:"48px 48px 40px"}}>
+      <div style={{maxWidth:640}}>
+        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:20}}>
+          <div style={{width:32,height:32,background:"#0f172a",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center"}}>
+            <span style={{color:"#fff",fontSize:16,fontWeight:800}}>P</span>
           </div>
-        ))}
-      </div>
-    </div>}
-    <style>{`@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}`}</style>
-  </div>;
-}
-
-// ─── UPDATE PANEL ───
-function UpdatePanel({ persona, onUpdate }) {
-  const [loading, setLoading] = useState(false);
-  const [proposal, setProposal] = useState(null);
-  const [error, setError] = useState(null);
-
-  const fetchUpdate = async () => {
-    setLoading(true); setProposal(null); setError(null);
-    const sys = `Tu es un expert en études d'audience et tendances culturelles pour les médias africains et du Maghreb.
-On te donne le profil d'un persona et tu dois l'actualiser avec les tendances récentes.
-Réponds UNIQUEMENT en JSON valide sans backticks :
-{"signaux":["<signal culturel récent 1>","<signal 2>","<signal 3>","<signal 4>"],"evolutions":[{"champ":"<medias|interests|frustrations|hooks|triggers>","action":"<ajouter|modifier|supprimer>","valeur":"<la valeur>","raison":"<pourquoi en 1 phrase>"}],"synthese":"<résumé des évolutions en 2 phrases>"}`;
-    const msg = `Actualise ce persona avec les tendances culturelles et médias de 2025-2026 :
-Nom: ${persona.name}, ${persona.age}, ${persona.city}
-Type: ${persona.type}
-Bio: ${persona.bio}
-Médias actuels: ${persona.medias.join(", ")}
-Intérêts: ${persona.interests.join(", ")}
-Frustrations: ${persona.frustrations.join(", ")}`;
-    try {
-      const text = await callClaude(sys, msg);
-      const clean = text.replace(/```json|```/g,"").trim();
-      setProposal(JSON.parse(clean));
-    } catch(e) { setError("Erreur de connexion à l'API."); }
-    finally { setLoading(false); }
-  };
-
-  const apply = () => {
-    if (!proposal) return;
-    const updated = { ...persona };
-    proposal.evolutions.forEach(ev => {
-      if (!updated[ev.champ]) return;
-      if (ev.action === "ajouter" && !updated[ev.champ].includes(ev.valeur)) updated[ev.champ] = [...updated[ev.champ], ev.valeur];
-      if (ev.action === "supprimer") updated[ev.champ] = updated[ev.champ].filter(x => x !== ev.valeur);
-      if (ev.action === "modifier") updated[ev.champ] = updated[ev.champ].map(x => x === ev.valeur ? ev.valeur : x);
-    });
-    onUpdate(updated);
-    setProposal(null);
-  };
-
-  return <div style={{padding:"24px 28px",height:"100%",overflowY:"auto"}}>
-    <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:20}}>
-      <PersonaAvatar persona={persona} size={48}/>
-      <div>
-        <div style={{color:"#fff",fontFamily:"'Playfair Display',serif",fontSize:20,fontWeight:700}}>{persona.name}</div>
-        <div style={{color:"#555",fontSize:12}}>Actualisation des signaux culturels</div>
-      </div>
-    </div>
-
-    <div style={{background:"#0d1117",border:"1px solid #6c63ff33",borderRadius:12,padding:"16px 20px",marginBottom:20}}>
-      <div style={{color:"#6c63ff",fontSize:12,fontWeight:700,marginBottom:6}}>Comment ça fonctionne ?</div>
-      <div style={{color:"#555",fontSize:13,lineHeight:1.7}}>Claude analyse les tendances culturelles et médias récentes pour ce profil et propose des mises à jour concrètes. Tu valides ou rejettes avant d'appliquer.</div>
-    </div>
-
-    <button onClick={fetchUpdate} disabled={loading} style={{width:"100%",background:loading?"#1a1a1a":"#6c63ff",border:"none",color:"#fff",padding:"13px",borderRadius:10,cursor:loading?"not-allowed":"pointer",fontWeight:700,fontSize:14,marginBottom:24}}>
-      {loading?"Analyse des tendances en cours...":"↻ Actualiser le persona avec les tendances récentes"}
-    </button>
-
-    {error && <div style={{background:"#1a0808",border:"1px solid #e8401c33",borderRadius:10,padding:"14px",color:"#e8401c",fontSize:13,marginBottom:16}}>{error}</div>}
-
-    {proposal && <div>
-      <div style={{background:"#0d0d0d",border:"1px solid #1a1a1a",borderRadius:12,padding:"18px",marginBottom:16}}>
-        <div style={{color:"#6c63ff",fontSize:10,textTransform:"uppercase",letterSpacing:1,marginBottom:14}}>4 signaux captés</div>
-        {proposal.signaux.map((s,i)=>(
-          <div key={i} style={{display:"flex",gap:10,marginBottom:8,alignItems:"flex-start"}}>
-            <div style={{width:6,height:6,borderRadius:"50%",background:"#6c63ff",marginTop:6,flexShrink:0}}/>
-            <div style={{color:"#ccc",fontSize:13}}>{s}</div>
-          </div>
-        ))}
-      </div>
-
-      <div style={{background:"#0d0d0d",border:"1px solid #1a1a1a",borderRadius:12,padding:"18px",marginBottom:16}}>
-        <div style={{color:"#f5a623",fontSize:10,textTransform:"uppercase",letterSpacing:1,marginBottom:14}}>Évolutions proposées</div>
-        {proposal.evolutions.map((ev,i)=>(
-          <div key={i} style={{background:"#111",border:"1px solid #1e1e1e",borderRadius:8,padding:"12px 14px",marginBottom:8}}>
-            <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:4}}>
-              <span style={{background:ev.action==="ajouter"?"#27ae6022":ev.action==="supprimer"?"#e8401c22":"#f5a62322",color:ev.action==="ajouter"?"#27ae60":ev.action==="supprimer"?"#e8401c":"#f5a623",fontSize:10,padding:"2px 8px",borderRadius:20,fontWeight:700}}>{ev.action}</span>
-              <span style={{color:"#555",fontSize:11}}>{ev.champ}</span>
+          <span style={{fontFamily:"'SF Pro Display','Helvetica Neue',sans-serif",fontSize:15,fontWeight:700,color:"#0f172a",letterSpacing:-0.3}}>PersonaLab</span>
+        </div>
+        <h1 style={{fontFamily:"'SF Pro Display','Helvetica Neue',sans-serif",fontSize:36,fontWeight:700,color:"#0f172a",lineHeight:1.2,margin:"0 0 14px",letterSpacing:-1}}>
+          Donnez un visage<br/>à vos audiences.
+        </h1>
+        <p style={{fontSize:16,color:"#64748b",lineHeight:1.7,margin:"0 0 28px",maxWidth:520}}>
+          Testez vos contenus — scripts, synopsis, concepts, formats — depuis le point de vue authentique de chaque persona. Obtenez un score, une réaction, des recommandations concrètes.
+        </p>
+        <div style={{display:"flex",gap:24,flexWrap:"wrap"}}>
+          {[
+            {icon:"🧪",label:"Tester un contenu",desc:"Analysez n'importe quel format"},
+            {icon:"↻",label:"Actualiser",desc:"Personas vivants, mis à jour en continu"},
+            {icon:"📎",label:"Importer un document",desc:"PDF, Word, étude terrain"},
+          ].map(f=><div key={f.label} style={{display:"flex",alignItems:"flex-start",gap:10}}>
+            <div style={{width:36,height:36,background:"#fff",borderRadius:8,border:"1px solid #e2e8f0",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>{f.icon}</div>
+            <div>
+              <div style={{fontSize:13,fontWeight:600,color:"#0f172a"}}>{f.label}</div>
+              <div style={{fontSize:12,color:"#94a3b8"}}>{f.desc}</div>
             </div>
-            <div style={{color:"#fff",fontSize:13,fontWeight:600,marginBottom:4}}>{ev.valeur}</div>
-            <div style={{color:"#555",fontSize:12}}>{ev.raison}</div>
+          </div>)}
+        </div>
+      </div>
+    </div>
+
+    {/* Personas grid */}
+    <div style={{padding:"32px 48px"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+        <h2 style={{fontFamily:"'SF Pro Display','Helvetica Neue',sans-serif",fontSize:18,fontWeight:600,color:"#0f172a",margin:0}}>
+          {personas.length} personas disponibles
+        </h2>
+        <span style={{fontSize:13,color:"#94a3b8"}}>Cliquez pour commencer →</span>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:16}}>
+        {featured.map(p=><div key={p.id} onClick={()=>onSelect(p.id)} style={{
+          background:"#fff",border:"1px solid #f1f5f9",borderRadius:14,padding:"20px",cursor:"pointer",
+          transition:"all 0.2s",boxShadow:"0 1px 3px rgba(0,0,0,0.04)"
+        }}
+        onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 4px 12px rgba(0,0,0,0.08)";e.currentTarget.style.borderColor="#e2e8f0";e.currentTarget.style.transform="translateY(-1px)";}}
+        onMouseLeave={e=>{e.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.04)";e.currentTarget.style.borderColor="#f1f5f9";e.currentTarget.style.transform="translateY(0)";}}>
+          <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:12}}>
+            <Avatar persona={p} size={44}/>
+            <div>
+              <div style={{fontWeight:600,fontSize:14,color:"#0f172a"}}>{p.name}</div>
+              <div style={{fontSize:11,color:"#94a3b8"}}>{p.age}{p.city?` · ${p.city}`:""}</div>
+            </div>
           </div>
-        ))}
+          <TypeBadge type={p.type} color={p.typeColor}/>
+          <p style={{fontSize:12,color:"#64748b",marginTop:10,lineHeight:1.5,display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical",overflow:"hidden"}}>{p.bio}</p>
+        </div>)}
       </div>
-
-      <div style={{background:"#0d0d0d",border:"1px solid #1a1a1a",borderRadius:12,padding:"16px 18px",marginBottom:20}}>
-        <div style={{color:"#555",fontSize:10,textTransform:"uppercase",letterSpacing:1,marginBottom:6}}>Synthèse</div>
-        <div style={{color:"#ccc",fontSize:13,lineHeight:1.7}}>{proposal.synthese}</div>
-      </div>
-
-      <div style={{display:"flex",gap:10}}>
-        <button onClick={apply} style={{flex:1,background:"#27ae60",border:"none",color:"#fff",padding:"12px",borderRadius:10,cursor:"pointer",fontWeight:700,fontSize:14}}>✓ Appliquer les évolutions</button>
-        <button onClick={()=>setProposal(null)} style={{background:"transparent",border:"1px solid #252525",color:"#555",padding:"12px 20px",borderRadius:10,cursor:"pointer",fontSize:14}}>Rejeter</button>
-      </div>
-    </div>}
-  </div>;
-}
-
-// ─── EDIT FORM ───
-function EditForm({ initial, onSave, onCancel }) {
-  const [form, setForm] = useState({ ...initial });
-  const [importing, setImporting] = useState(false);
-  const [importStatus, setImportStatus] = useState(null);
-  const fileRef = useState(null);
-  const set = (k,v) => setForm(f=>({...f,[k]:v}));
-  const setMd = (k,v) => setForm(f=>({...f,marketData:{...f.marketData,[k]:v}}));
-  const fs = {width:"100%",background:"#0d0d0d",border:"1px solid #252525",borderRadius:8,color:"#fff",padding:"9px 12px",fontSize:13,outline:"none",boxSizing:"border-box"};
-  const ls = {color:"#444",fontSize:10,textTransform:"uppercase",letterSpacing:1,marginBottom:5,display:"block"};
-
-  const importFromDoc = async (file) => {
-    if (!file) return;
-    setImporting(true);
-    setImportStatus("Lecture du document...");
-    try {
-      // Read file as base64
-      const base64 = await new Promise((res, rej) => {
-        const reader = new FileReader();
-        reader.onload = () => res(reader.result.split(",")[1]);
-        reader.onerror = rej;
-        reader.readAsDataURL(file);
-      });
-
-      const isPDF = file.type === "application/pdf";
-      setImportStatus("Analyse du document par l'IA...");
-
-      const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
-      const sys = `Tu es un expert en construction de personas éditoriaux pour les médias.
-On te soumet un document décrivant un profil utilisateur, une étude terrain, une fiche persona, ou tout autre document pertinent.
-Tu dois en extraire les informations pour enrichir un persona éditorial existant.
-Réponds UNIQUEMENT en JSON valide sans backticks ni markdown, format exact :
-{
-  "name": "<prénom si trouvé, sinon null>",
-  "age": "<âge si trouvé, sinon null>",
-  "city": "<ville/pays si trouvé, sinon null>",
-  "job": "<profession/statut si trouvé, sinon null>",
-  "bio": "<biographie synthétique 2-3 phrases, sinon null>",
-  "medias": ["<media 1>", "<media 2>"],
-  "interests": ["<intérêt 1>"],
-  "frustrations": ["<frustration 1>"],
-  "hooks": ["<accroche 1>"],
-  "triggers": ["<déclencheur 1>"],
-  "tags": ["<tag 1>"],
-  "marketData": {
-    "revenu": "<si mentionné, sinon null>",
-    "forfait": "<si mentionné, sinon null>",
-    "adoption": "<si mentionné, sinon null>",
-    "genres": "<genres préférés si mentionnés, sinon null>",
-    "source": "<source du document>"
-  },
-  "notes": "<observations complémentaires utiles, sinon null>"
-}
-Pour les tableaux, ne retourne que les éléments trouvés dans le document. Ne suis pas la liste si elle est vide.`;
-
-      const userContent = isPDF
-        ? [{ type: "document", source: { type: "base64", media_type: "application/pdf", data: base64 } },
-           { type: "text", text: `Extrais les informations de ce document pour enrichir le persona "${form.name || 'nouveau'}". Profil existant : ${form.bio || 'aucun'}` }]
-        : [{ type: "text", text: `Extrais les informations de ce document texte pour enrichir le persona "${form.name || 'nouveau'}".
-
-Contenu : ${atob(base64).substring(0, 8000)}` }];
-
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-api-key": apiKey, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
-        body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 2000, system: sys, messages: [{ role: "user", content: userContent }] })
-      });
-
-      const data = await res.json();
-      const text = data.content.map(i => i.text || "").join("");
-      const clean = text.replace(/```json|```/g, "").trim();
-      const extracted = JSON.parse(clean);
-
-      // Merge: enrich existing fields, don't overwrite if doc has nothing
-      setForm(f => {
-        const merged = { ...f };
-        if (extracted.name && !f.name) merged.name = extracted.name;
-        if (extracted.age && !f.age) merged.age = extracted.age;
-        if (extracted.city && !f.city) merged.city = extracted.city;
-        if (extracted.job && !f.job) merged.job = extracted.job;
-        if (extracted.bio) merged.bio = f.bio ? `${f.bio}
-
-[Import doc] ${extracted.bio}` : extracted.bio;
-        // Merge arrays — add new items without duplicating
-        ["medias","interests","frustrations","hooks","triggers","tags"].forEach(k => {
-          if (extracted[k]?.length) {
-            const existing = f[k] || [];
-            const newItems = extracted[k].filter(item => !existing.some(e => e.toLowerCase() === item.toLowerCase()));
-            merged[k] = [...existing, ...newItems];
-          }
-        });
-        // Merge marketData
-        if (extracted.marketData) {
-          merged.marketData = { ...f.marketData };
-          Object.entries(extracted.marketData).forEach(([k, v]) => {
-            if (v && !merged.marketData[k]) merged.marketData[k] = v;
-          });
-        }
-        if (extracted.notes) merged.notes = f.notes ? `${f.notes}
-
-[Import] ${extracted.notes}` : extracted.notes;
-        return merged;
-      });
-
-      setImportStatus("✓ Document importé — les champs ont été enrichis");
-      setTimeout(() => setImportStatus(null), 4000);
-    } catch(e) {
-      console.error(e);
-      setImportStatus("Erreur lors de l'import. Vérifiez le format du fichier.");
-      setTimeout(() => setImportStatus(null), 4000);
-    } finally {
-      setImporting(false);
-    }
-  };
-
-  return <div style={{height:"100%",overflowY:"auto",padding:"24px 28px"}}>
-    <h3 style={{color:"#fff",fontFamily:"'Playfair Display',serif",fontSize:20,marginBottom:16}}>Modifier — {initial.name || "Nouveau persona"}</h3>
-
-    {/* ✨ IMPORT DOCUMENT */}
-    <div style={{background:"#0d1117",border:"1px solid #6c63ff33",borderRadius:10,padding:"14px 18px",marginBottom:20}}>
-      <div style={{color:"#6c63ff",fontSize:11,textTransform:"uppercase",letterSpacing:1,marginBottom:8,fontWeight:700}}>✨ Enrichir depuis un document</div>
-      <p style={{color:"#555",fontSize:12,margin:"0 0 12px 0",lineHeight:1.6}}>Importez une fiche persona, une étude terrain, un rapport ou tout document descriptif. L'IA en extraira automatiquement les informations et enrichira les champs ci-dessous.</p>
-      <label style={{display:"inline-block",background:importing?"#1a1a1a":"#6c63ff22",border:"1px solid #6c63ff44",color:importing?"#444":"#6c63ff",padding:"8px 16px",borderRadius:8,cursor:importing?"not-allowed":"pointer",fontSize:13,fontWeight:600}}>
-        {importing ? "Analyse en cours..." : "📎 Sélectionner un document (PDF, Word, TXT)"}
-        <input type="file" accept=".pdf,.doc,.docx,.txt" disabled={importing} onChange={e=>e.target.files[0]&&importFromDoc(e.target.files[0])} style={{display:"none"}}/>
-      </label>
-      {importStatus && <div style={{marginTop:10,fontSize:12,color:importStatus.startsWith("✓")?"#27ae60":"#f5a623",fontStyle:"italic"}}>{importStatus}</div>}
-    </div>
-
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:14}}>
-      <div><label style={ls}>Prénom</label><input value={form.name} onChange={e=>set("name",e.target.value)} style={fs}/></div>
-      <div><label style={ls}>Emoji</label><input value={form.emoji} onChange={e=>set("emoji",e.target.value)} style={{...fs,textAlign:"center",fontSize:22}}/></div>
-      <div><label style={ls}>Âge</label><input value={form.age} onChange={e=>set("age",e.target.value)} style={fs}/></div>
-      <div><label style={ls}>Ville</label><input value={form.city} onChange={e=>set("city",e.target.value)} style={fs}/></div>
-      <div style={{gridColumn:"1/-1"}}><label style={ls}>Profession</label><input value={form.job} onChange={e=>set("job",e.target.value)} style={fs}/></div>
-      <div>
-        <label style={ls}>Type</label>
-        <select value={form.type} onChange={e=>{const opt=TYPE_OPTIONS.find(o=>o.label===e.target.value);set("type",e.target.value);if(opt)set("typeColor",opt.color);}} style={{...fs,appearance:"none"}}>
-          {TYPE_OPTIONS.map(o=><option key={o.label} value={o.label}>{o.label}</option>)}
-        </select>
-      </div>
-      <div><label style={ls}>Projet</label><input value={form.project||""} onChange={e=>set("project",e.target.value)} style={fs}/></div>
-    </div>
-    <div style={{marginBottom:14}}><label style={ls}>Bio</label><textarea value={form.bio} onChange={e=>set("bio",e.target.value)} style={{...fs,minHeight:90,resize:"vertical"}}/></div>
-    {[["medias","Médias"],["interests","Intérêts"],["frustrations","Frustrations"],["hooks","Accroches"],["triggers","Déclencheurs"],["tags","Tags"]].map(([k,l])=>(
-      <div key={k} style={{marginBottom:12}}><label style={ls}>{l}</label><TagInput value={form[k]||[]} onChange={v=>set(k,v)} placeholder={`Ajouter ${l.toLowerCase()}...`}/></div>
-    ))}
-    <div style={{marginBottom:20}}><label style={ls}>Notes</label><textarea value={form.notes||""} onChange={e=>set("notes",e.target.value)} style={{...fs,minHeight:80,resize:"vertical"}}/></div>
-    <div style={{display:"flex",gap:10}}>
-      <button onClick={()=>onSave(form)} style={{background:"#6c63ff",border:"none",color:"#fff",padding:"10px 22px",borderRadius:8,cursor:"pointer",fontWeight:700,fontSize:14}}>Enregistrer</button>
-      <button onClick={onCancel} style={{background:"transparent",border:"1px solid #252525",color:"#555",padding:"10px 22px",borderRadius:8,cursor:"pointer"}}>Annuler</button>
     </div>
   </div>;
 }
 
 // ─── DETAIL VIEW ───
-function DetailView({ persona, onEdit, onDelete, onTest, onUpdate }) {
-  const url = persona.photo || PHOTO_URLS[persona.id];
-  const [imgErr, setImgErr] = useState(false);
-  const md = persona.marketData || {};
-  const sections = [
-    {key:"medias",label:"Médias",color:"#3498db"},
-    {key:"interests",label:"Intérêts",color:"#27ae60"},
-    {key:"frustrations",label:"Frustrations",color:"#e8401c"},
-    {key:"hooks",label:"Accroches",color:"#f5a623"},
-    {key:"triggers",label:"Déclencheurs",color:"#9b59b6"},
+function DetailView({persona,onEdit,onDelete,onTest,onUpdate}) {
+  const url=persona.photo||PHOTO_URLS[persona.id];
+  const [imgErr,setImgErr]=useState(false);
+  const md=persona.marketData||{};
+  const sections=[
+    {key:"medias",label:"Médias",color:"#1a56db"},
+    {key:"interests",label:"Intérêts",color:"#16a34a"},
+    {key:"frustrations",label:"Frustrations",color:"#dc2626"},
+    {key:"hooks",label:"Accroches",color:"#d97706"},
+    {key:"triggers",label:"Déclencheurs",color:"#6c2bd9"},
   ];
-  return <div style={{height:"100%",overflowY:"auto"}}>
-    {/* Hero — clean card design */}
-    <div style={{background:`linear-gradient(135deg, ${persona.typeColor}18 0%, #0d0d0d 60%)`,borderBottom:"1px solid #1a1a1a",padding:"28px 28px 20px",flexShrink:0}}>
-      <div style={{display:"flex",alignItems:"flex-start",gap:20,marginBottom:20}}>
-        {/* Avatar médaillon */}
+  return <div style={{height:"100%",overflowY:"auto",background:"#fff"}}>
+    {/* Hero card */}
+    <div style={{padding:"28px 32px",borderBottom:"1px solid #f1f5f9"}}>
+      <div style={{display:"flex",alignItems:"flex-start",gap:20}}>
         <div style={{position:"relative",flexShrink:0}}>
           {url&&!imgErr
-            ?<img src={url} alt={persona.name} onError={()=>setImgErr(true)} style={{width:96,height:96,borderRadius:"50%",objectFit:"cover",objectPosition:"top",border:`3px solid ${persona.typeColor}`,boxShadow:`0 0 0 4px ${persona.typeColor}22`}}/>
-            :<div style={{width:96,height:96,borderRadius:"50%",background:"#1a1a1a",display:"flex",alignItems:"center",justifyContent:"center",fontSize:40,border:`3px solid ${persona.typeColor}`}}>{persona.emoji}</div>
+            ?<img src={url} onError={()=>setImgErr(true)} alt={persona.name} style={{width:88,height:88,borderRadius:16,objectFit:"cover",objectPosition:"top",border:"1px solid #f1f5f9"}}/>
+            :<div style={{width:88,height:88,borderRadius:16,background:"#f8fafc",display:"flex",alignItems:"center",justifyContent:"center",fontSize:40}}>{persona.emoji}</div>
           }
-          <div style={{position:"absolute",bottom:2,right:2,width:18,height:18,borderRadius:"50%",background:persona.typeColor,border:"2px solid #080808"}}/>
         </div>
-        {/* Infos */}
-        <div style={{flex:1,minWidth:0}}>
-          <h2 style={{color:"#fff",fontFamily:"'Playfair Display',serif",fontSize:26,margin:"0 0 4px 0",letterSpacing:"-0.5px"}}>{persona.name}</h2>
-          <div style={{color:"#666",fontSize:13,marginBottom:8}}>{persona.job}</div>
-          <div style={{display:"flex",flexWrap:"wrap",gap:6,alignItems:"center"}}>
-            <span style={{background:persona.typeColor+"22",color:persona.typeColor,fontSize:11,padding:"3px 10px",borderRadius:20,fontWeight:700,border:`1px solid ${persona.typeColor}44`}}>{persona.type}</span>
-            {persona.age&&<span style={{color:"#555",fontSize:12}}>· {persona.age}</span>}
-            {persona.city&&<span style={{color:"#555",fontSize:12}}>· {persona.city}</span>}
-            {persona.chapter&&<span style={{color:"#333",fontSize:11}}>· {persona.chapter}</span>}
+        <div style={{flex:1}}>
+          <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between"}}>
+            <div>
+              <h2 style={{fontFamily:"'SF Pro Display','Helvetica Neue',sans-serif",fontSize:24,fontWeight:700,color:"#0f172a",margin:"0 0 4px",letterSpacing:-0.5}}>{persona.name}</h2>
+              <div style={{fontSize:13,color:"#64748b",marginBottom:8}}>{persona.job}</div>
+              <div style={{display:"flex",flexWrap:"wrap",gap:6,alignItems:"center"}}>
+                <TypeBadge type={persona.type} color={persona.typeColor}/>
+                {persona.age&&<span style={{fontSize:12,color:"#94a3b8"}}>· {persona.age}</span>}
+                {persona.city&&<span style={{fontSize:12,color:"#94a3b8"}}>· {persona.city}</span>}
+                {persona.chapter&&<span style={{fontSize:11,color:"#cbd5e1",background:"#f8fafc",padding:"2px 8px",borderRadius:20,border:"1px solid #f1f5f9"}}>{persona.chapter}</span>}
+              </div>
+            </div>
+            <div style={{display:"flex",gap:6}}>
+              <button onClick={onEdit} style={{background:"#f8fafc",border:"1px solid #e2e8f0",color:"#374151",padding:"6px 14px",borderRadius:8,cursor:"pointer",fontSize:12,fontWeight:500}}>Modifier</button>
+              <button onClick={onDelete} style={{background:"#fff",border:"1px solid #fecaca",color:"#ef4444",padding:"6px 14px",borderRadius:8,cursor:"pointer",fontSize:12}}>Supprimer</button>
+            </div>
           </div>
         </div>
-        {/* Actions */}
-        <div style={{display:"flex",gap:6,flexShrink:0}}>
-          <button onClick={onEdit} style={{background:"#1a1a1a",border:"1px solid #2a2a2a",color:"#888",padding:"6px 13px",borderRadius:8,cursor:"pointer",fontSize:12}}>✏️</button>
-          <button onClick={onDelete} style={{background:"transparent",border:"1px solid #e8401c33",color:"#e8401c",padding:"6px 13px",borderRadius:8,cursor:"pointer",fontSize:12}}>✕</button>
-        </div>
       </div>
-      {/* CTA buttons */}
-      <div style={{display:"flex",gap:10}}>
-        <button onClick={onTest} style={{flex:1,background:persona.typeColor+"22",border:`1px solid ${persona.typeColor}55`,color:persona.typeColor,padding:"11px",borderRadius:10,cursor:"pointer",fontWeight:700,fontSize:13,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
-          🧪 <span>Tester un contenu</span>
+
+      {/* Action buttons */}
+      <div style={{display:"flex",gap:10,marginTop:20}}>
+        <button onClick={onTest} style={{flex:1,background:"#0f172a",border:"none",color:"#fff",padding:"11px",borderRadius:10,cursor:"pointer",fontWeight:600,fontSize:13,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+          🧪 Tester un contenu
         </button>
-        <button onClick={onUpdate} style={{flex:1,background:"#0d1117",border:"1px solid #27ae6033",color:"#27ae60",padding:"11px",borderRadius:10,cursor:"pointer",fontWeight:700,fontSize:13,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
-          ↻ <span>Actualiser</span>
+        <button onClick={onUpdate} style={{flex:1,background:"#f8fafc",border:"1px solid #e2e8f0",color:"#374151",padding:"11px",borderRadius:10,cursor:"pointer",fontWeight:600,fontSize:13,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+          ↻ Actualiser
         </button>
       </div>
     </div>
 
-    <div style={{padding:"16px 24px"}}>
-      <div style={{background:"#0d0d0d",border:"1px solid #1a1a1a",borderRadius:10,padding:"14px 16px",marginBottom:12}}>
-        <div style={{color:"#333",fontSize:10,textTransform:"uppercase",letterSpacing:1,marginBottom:6}}>Bio</div>
-        <p style={{color:"#ccc",fontSize:13,lineHeight:1.7,margin:0}}>{persona.bio}</p>
+    <div style={{padding:"20px 32px"}}>
+      {/* Bio */}
+      <div style={{marginBottom:16}}>
+        <div style={{fontSize:11,fontWeight:600,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:6}}>Bio</div>
+        <p style={{fontSize:13,color:"#374151",lineHeight:1.7,margin:0}}>{persona.bio}</p>
       </div>
 
-      {(md.revenu||md.adoption)&&<div style={{background:"#0d1117",border:"1px solid #6c63ff22",borderRadius:10,padding:"14px 16px",marginBottom:12}}>
-        <div style={{color:"#6c63ff",fontSize:10,textTransform:"uppercase",letterSpacing:1,marginBottom:10,fontWeight:700}}>📊 Données marché</div>
-        {[["Revenu",md.revenu],["Forfait",md.forfait],["Adoption",md.adoption],["Genres %",md.genres]].filter(([,v])=>v).map(([l,v])=>(
-          <div key={l} style={{display:"flex",gap:10,padding:"7px 0",borderBottom:"1px solid #141414"}}>
-            <div style={{color:"#6c63ff",fontSize:10,textTransform:"uppercase",letterSpacing:1,minWidth:90,fontWeight:600}}>{l}</div>
-            <div style={{color:"#aaa",fontSize:12,flex:1}}>{v}</div>
+      {/* Market data */}
+      {(md.revenu||md.adoption)&&<div style={{background:"#f8fafc",borderRadius:10,padding:"14px 16px",marginBottom:16,border:"1px solid #f1f5f9"}}>
+        <div style={{fontSize:11,fontWeight:600,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:10}}>Données marché</div>
+        {md.source&&<div style={{fontSize:10,color:"#cbd5e1",marginBottom:8}}>{md.source}</div>}
+        {[["Revenu",md.revenu],["Forfait",md.forfait],["Adoption",md.adoption],["Genres",md.genres]].filter(([,v])=>v).map(([l,v])=>(
+          <div key={l} style={{display:"flex",gap:12,padding:"6px 0",borderBottom:"1px solid #f1f5f9"}}>
+            <div style={{fontSize:11,fontWeight:600,color:"#94a3b8",textTransform:"uppercase",letterSpacing:0.5,minWidth:70}}>{l}</div>
+            <div style={{fontSize:12,color:"#374151",flex:1}}>{v}</div>
           </div>
         ))}
       </div>}
 
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}}>
-        {sections.map(s=>persona[s.key]?.length>0&&<div key={s.key} style={{background:"#0d0d0d",border:"1px solid #1a1a1a",borderRadius:10,padding:"12px 14px"}}>
-          <div style={{color:s.color,fontSize:10,textTransform:"uppercase",letterSpacing:1,marginBottom:8,fontWeight:700}}>{s.label}</div>
-          {persona[s.key].map((item,i)=><div key={i} style={{color:"#aaa",fontSize:12,padding:"2px 0",borderBottom:i<persona[s.key].length-1?"1px solid #141414":"none"}}>· {item}</div>)}
+      {/* Grid */}
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
+        {sections.map(s=>persona[s.key]?.length>0&&<div key={s.key} style={{background:"#f8fafc",borderRadius:10,padding:"12px 14px",border:"1px solid #f1f5f9"}}>
+          <div style={{fontSize:11,fontWeight:600,color:s.color,textTransform:"uppercase",letterSpacing:1,marginBottom:8}}>{s.label}</div>
+          {persona[s.key].map((item,i)=><div key={i} style={{fontSize:12,color:"#374151",padding:"3px 0",borderBottom:i<persona[s.key].length-1?"1px solid #f1f5f9":"none"}}>· {item}</div>)}
         </div>)}
       </div>
 
-      {persona.notes&&<div style={{background:"#0d0d0d",border:"1px solid #1a1a1a",borderRadius:10,padding:"14px 16px"}}>
-        <div style={{color:"#333",fontSize:10,textTransform:"uppercase",letterSpacing:1,marginBottom:6}}>Notes</div>
-        <div style={{color:"#888",fontSize:13,lineHeight:1.7,whiteSpace:"pre-wrap"}}>{persona.notes}</div>
+      {/* Notes */}
+      {persona.notes&&<div style={{background:"#fffbeb",borderRadius:10,padding:"12px 14px",border:"1px solid #fef3c7"}}>
+        <div style={{fontSize:11,fontWeight:600,color:"#d97706",textTransform:"uppercase",letterSpacing:1,marginBottom:6}}>Notes</div>
+        <div style={{fontSize:13,color:"#374151",lineHeight:1.7,whiteSpace:"pre-wrap"}}>{persona.notes}</div>
       </div>}
+    </div>
+  </div>;
+}
+
+// ─── TEST PANEL ───
+function TestPanel({persona,allPersonas,onSelectPersona}) {
+  const [content,setContent]=useState("");
+  const [loading,setLoading]=useState(false);
+  const [result,setResult]=useState(null);
+  const [error,setError]=useState(null);
+  const [fileLoading,setFileLoading]=useState(false);
+  const scoreColor=result?(result.score>=70?"#16a34a":result.score>=40?"#d97706":"#dc2626"):"#0f172a";
+
+  const readFile = async(file) => {
+    setFileLoading(true);
+    const base64=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(",")[1]);r.onerror=rej;r.readAsDataURL(file);});
+    const isPDF=file.type==="application/pdf";
+    if(isPDF){
+      setContent(`[Document PDF : ${file.name}]
+
+Contenu à analyser par ${persona.name}.`);
+      // Store base64 for analysis
+      sessionStorage.setItem("lastDocB64",base64);
+      sessionStorage.setItem("lastDocType","pdf");
+    } else {
+      const text=atob(base64).substring(0,6000);
+      setContent(text);
+      sessionStorage.removeItem("lastDocB64");
+    }
+    setFileLoading(false);
+  };
+
+  const analyze = async() => {
+    if(!content.trim()) return;
+    setLoading(true);setResult(null);setError(null);
+    const sys=`Tu es ${persona.name}, ${persona.age}, ${persona.job}, vivant à ${persona.city||"Afrique/Maghreb"}.
+Type d\'audience : ${persona.type}.
+Bio : ${persona.bio}
+Médias consommés : ${persona.medias?.join(", ")}.
+Intérêts : ${persona.interests?.join(", ")}.
+Frustrations : ${persona.frustrations?.join(", ")}.
+Accroches : ${persona.hooks?.join(", ")}.
+Déclencheurs : ${persona.triggers?.join(", ")}.
+Revenus/accès : ${persona.marketData?.revenu||"non précisé"}. Forfait : ${persona.marketData?.forfait||"non précisé"}.
+
+Évalue ce contenu UNIQUEMENT depuis ton point de vue authentique. Sois précis, factuel, ancré dans ton profil réel. Pas de généralités.
+
+Réponds UNIQUEMENT en JSON valide sans backticks, format exact :
+{"score":<0-100>,"verdict":"<titre percutant max 8 mots>","ressenti":{"accroche":"<1-2 phrases : les premières secondes/lignes t\'ont-elles capturé ? Cite un élément concret du contenu>","identification":"<1-2 phrases : tu te reconnais ? Les personnages, situations, codes culturels sonnent-ils juste pour toi ?>","friction":"<1-2 phrases : ce qui accroche, dérange ou sonne faux — direct, cite ce qui ne colle pas avec ton profil>","intention":"<1-2 phrases : tu continuerais ? Tu partagerais avec qui et pourquoi — ou pourquoi tu décrocherais>"},"dimensions":{"Pertinence":<0-100>,"Format":<0-100>,"Ton":<0-100>,"Engagement":<0-100>},"recommandations":["<conseil ancré dans ton profil 1>","<conseil 2>","<conseil 3>"]}`;
+    try{
+      const docB64=sessionStorage.getItem("lastDocB64");
+      const docType=sessionStorage.getItem("lastDocType");
+      let imgContent=null;
+      if(docB64&&docType==="pdf") imgContent={type:"document",source:{type:"base64",media_type:"application/pdf",data:docB64}};
+      const text=await callClaude(sys,`Analyse ce contenu :\n\n${content}`,imgContent);
+      const clean=text.replace(/\`\`\`json|\`\`\`/g,"").trim();
+      setResult(JSON.parse(clean));
+    }catch(e){setError("Erreur d'analyse. Vérifiez la connexion.");}
+    finally{setLoading(false);}
+  };
+
+  // Get cross-recommendations from other personas
+  const getCrossRecs = () => {
+    if(!result||!allPersonas) return [];
+    // Suggest personas with complementary profiles
+    return allPersonas
+      .filter(p=>p.id!==persona.id)
+      .map(p=>({
+        persona:p,
+        reason: result.score < 50
+          ? `Ce contenu pourrait mieux correspondre à ${p.name} (${p.type})`
+          : `Comparez la réaction de ${p.name} (${p.type})`
+      }))
+      .slice(0,3);
+  };
+
+  const crossRecs=result?getCrossRecs():[];
+
+  return <div style={{height:"100%",overflowY:"auto",background:"#fff"}}>
+    <div style={{padding:"24px 32px",borderBottom:"1px solid #f1f5f9"}}>
+      <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:4}}>
+        <Avatar persona={persona} size={44}/>
+        <div>
+          <h3 style={{fontFamily:"'SF Pro Display','Helvetica Neue',sans-serif",fontSize:18,fontWeight:700,color:"#0f172a",margin:0}}>{persona.name}</h3>
+          <div style={{fontSize:12,color:"#64748b"}}>{persona.job} · {persona.age}</div>
+        </div>
+        <TypeBadge type={persona.type} color={persona.typeColor}/>
+      </div>
+    </div>
+
+    <div style={{padding:"24px 32px"}}>
+      <div style={{marginBottom:14}}>
+        <div style={{fontSize:11,fontWeight:600,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:8}}>Contenu à tester</div>
+        <textarea value={content} onChange={e=>setContent(e.target.value)}
+          placeholder={`Collez un synopsis, script, article, concept, transcript audio/vidéo...\n\n${persona.name} va l'analyser depuis son point de vue authentique.\n\nFormats acceptés : texte libre · transcription · description vidéo · concept créatif`}
+          style={{width:"100%",minHeight:130,background:"#f8fafc",border:"1px solid #e2e8f0",borderRadius:10,color:"#374151",padding:"12px",fontSize:13,outline:"none",resize:"vertical",lineHeight:1.6,boxSizing:"border-box",fontFamily:"inherit"}}/>
+      </div>
+
+      {/* File import */}
+      <div style={{marginBottom:16}}>
+        <label style={{display:"inline-flex",alignItems:"center",gap:7,background:"#f8fafc",border:"1px solid #e2e8f0",color:"#374151",padding:"7px 14px",borderRadius:8,cursor:fileLoading?"not-allowed":"pointer",fontSize:12,fontWeight:500}}>
+          {fileLoading?"Lecture...":"📎 Importer un document (PDF, TXT)"}
+          <input type="file" accept=".pdf,.txt,.md" disabled={fileLoading} onChange={e=>e.target.files[0]&&readFile(e.target.files[0])} style={{display:"none"}}/>
+        </label>
+      </div>
+
+      {/* Quick examples */}
+      <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:20}}>
+        {[
+          {label:"📝 Synopsis",v:"Synopsis d'une série verticale africaine de 8 épisodes de 2 minutes sur l'amour à Dakar entre deux jeunes professionnels."},
+          {label:"🎬 Script",v:"Script pilote — Scène d'ouverture : une jeune femme reçoit un message de son ex le jour de son mariage. Format vertical, 90 secondes."},
+          {label:"🎙️ Podcast",v:"Concept de podcast : 5 minutes d'histoires vraies sur les relations amoureuses en Afrique urbaine, narré par une femme de 30 ans."},
+          {label:"📱 TikTok",v:"Série TikTok : 60 secondes par épisode, romance lycée au Maroc, cliffhanger à chaque fin d'épisode, musique trending."},
+        ].map(ex=><button key={ex.label} onClick={()=>setContent(ex.v)}
+          style={{background:"#f8fafc",border:"1px solid #e2e8f0",color:"#64748b",padding:"5px 11px",borderRadius:20,cursor:"pointer",fontSize:11,fontWeight:500}}>{ex.label}</button>)}
+      </div>
+
+      <button onClick={analyze} disabled={loading||!content.trim()} style={{
+        width:"100%",background:loading||!content.trim()?"#f1f5f9":"#0f172a",
+        border:"none",color:loading||!content.trim()?"#9ca3af":"#fff",
+        padding:"12px",borderRadius:10,cursor:loading||!content.trim()?"not-allowed":"pointer",
+        fontWeight:600,fontSize:14,marginBottom:20,transition:"all 0.2s"
+      }}>
+        {loading?`${persona.name} analyse votre contenu...`:`Analyser avec ${persona.name} →`}
+      </button>
+
+      {error&&<div style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:10,padding:"12px 14px",color:"#dc2626",fontSize:13,marginBottom:16}}>{error}</div>}
+
+      {result&&<div>
+        {/* Score card */}
+        <div style={{background:"#f8fafc",borderRadius:12,padding:"20px",marginBottom:14,display:"flex",gap:20,alignItems:"center",border:"1px solid #f1f5f9"}}>
+          <ScoreRing score={result.score} color={scoreColor} size={84}/>
+          <div>
+            <div style={{fontFamily:"'SF Pro Display','Helvetica Neue',sans-serif",fontSize:18,fontWeight:700,color:"#0f172a",marginBottom:4}}>{result.verdict}</div>
+            <div style={{fontSize:12,color:"#94a3b8"}}>Score de résonance avec {persona.name}</div>
+          </div>
+        </div>
+
+        {/* Ressenti 4 dimensions */}
+        <div style={{background:"#f8fafc",borderRadius:12,padding:"16px",marginBottom:14,border:"1px solid #f1f5f9"}}>
+          <div style={{fontSize:11,fontWeight:600,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:12}}>Ressenti de {persona.name}</div>
+          {result.ressenti && [
+            {key:"accroche", label:"Accroche", icon:"👁", color:"#1a56db"},
+            {key:"identification", label:"Identification", icon:"🪞", color:"#16a34a"},
+            {key:"friction", label:"Friction", icon:"⚡", color:"#dc2626"},
+            {key:"intention", label:"Intention", icon:"↗", color:"#6c2bd9"},
+          ].map(({key,label,icon,color})=>result.ressenti[key]&&(
+            <div key={key} style={{marginBottom:10,paddingBottom:10,borderBottom:"1px solid #f1f5f9"}}>
+              <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}>
+                <span style={{fontSize:13}}>{icon}</span>
+                <span style={{fontSize:11,fontWeight:700,color,textTransform:"uppercase",letterSpacing:0.8}}>{label}</span>
+              </div>
+              <div style={{paddingLeft:20,color:"#374151",fontSize:13,lineHeight:1.65,fontStyle:"italic"}}>
+                "{result.ressenti[key]}"
+              </div>
+            </div>
+          ))}
+          {/* Fallback si ancien format */}
+          {!result.ressenti && result.reaction && (
+            <div style={{borderLeft:`3px solid ${persona.typeColor}`,paddingLeft:14,color:"#374151",fontSize:13,lineHeight:1.7,fontStyle:"italic"}}>
+              "{result.reaction}"
+            </div>
+          )}
+        </div>
+
+        {/* Dimensions */}
+        <div style={{background:"#f8fafc",borderRadius:12,padding:"16px",marginBottom:14,border:"1px solid #f1f5f9"}}>
+          <div style={{fontSize:11,fontWeight:600,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:12}}>Analyse détaillée</div>
+          {Object.entries(result.dimensions).map(([k,v])=><DimBar key={k} label={k} value={v}/>)}
+        </div>
+
+        {/* Recommandations */}
+        <div style={{background:"#f8fafc",borderRadius:12,padding:"16px",marginBottom:14,border:"1px solid #f1f5f9"}}>
+          <div style={{fontSize:11,fontWeight:600,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:12}}>Pour mieux toucher {persona.name}</div>
+          {result.recommandations.map((r,i)=><div key={i} style={{display:"flex",gap:10,marginBottom:8,alignItems:"flex-start"}}>
+            <div style={{width:20,height:20,borderRadius:"50%",background:"#0f172a",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700,flexShrink:0}}>{i+1}</div>
+            <div style={{fontSize:13,color:"#374151",lineHeight:1.6}}>{r}</div>
+          </div>)}
+        </div>
+
+        {/* Cross-recommendations */}
+        {crossRecs.length>0&&<div style={{background:"#f0f9ff",borderRadius:12,padding:"16px",border:"1px solid #bae6fd"}}>
+          <div style={{fontSize:11,fontWeight:600,color:"#0369a1",textTransform:"uppercase",letterSpacing:1,marginBottom:12}}>
+            {result.score<50?"Ce contenu pourrait mieux correspondre à...":"Comparez avec d'autres personas"}
+          </div>
+          <div style={{display:"flex",flexDirection:"column",gap:8}}>
+            {crossRecs.map(({persona:p})=><button key={p.id} onClick={()=>onSelectPersona(p.id)}
+              style={{display:"flex",alignItems:"center",gap:10,background:"#fff",border:"1px solid #e0f2fe",borderRadius:8,padding:"8px 12px",cursor:"pointer",textAlign:"left",width:"100%"}}>
+              <Avatar persona={p} size={32}/>
+              <div style={{flex:1}}>
+                <div style={{fontSize:13,fontWeight:600,color:"#0f172a"}}>{p.name}</div>
+                <div style={{fontSize:11,color:"#64748b"}}>{p.type} · {p.city}</div>
+              </div>
+              <TypeBadge type={p.type} color={p.typeColor} small/>
+              <span style={{fontSize:12,color:"#0369a1"}}>Tester →</span>
+            </button>)}
+          </div>
+        </div>}
+      </div>}
+    </div>
+  </div>;
+}
+
+// ─── UPDATE PANEL ───
+function UpdatePanel({persona,onUpdate}) {
+  const [loading,setLoading]=useState(false);
+  const [proposal,setProposal]=useState(null);
+  const [error,setError]=useState(null);
+
+  const fetchUpdate=async()=>{
+    setLoading(true);setProposal(null);setError(null);
+    const sys=`Tu es un expert en tendances culturelles et médias pour l'Afrique et le Maghreb.
+Actualise ce persona avec les tendances récentes 2025-2026.
+Réponds UNIQUEMENT en JSON valide sans backticks :
+{"signaux":["<signal 1>","<signal 2>","<signal 3>","<signal 4>"],"evolutions":[{"champ":"<medias|interests|frustrations|hooks|triggers>","action":"<ajouter|supprimer>","valeur":"<valeur>","raison":"<pourquoi>"}],"synthese":"<résumé 2 phrases>"}`;
+    const msg=`Actualise : ${persona.name}, ${persona.age}, ${persona.city}. Type: ${persona.type}. Bio: ${persona.bio}. Médias: ${persona.medias?.join(", ")}. Intérêts: ${persona.interests?.join(", ")}.`;
+    try{
+      const text=await callClaude(sys,msg);
+      const clean=text.replace(/\`\`\`json|\`\`\`/g,"").trim();
+      setProposal(JSON.parse(clean));
+    }catch(e){setError("Erreur de connexion à l'API.");}
+    finally{setLoading(false);}
+  };
+
+  const apply=()=>{
+    if(!proposal) return;
+    const updated={...persona};
+    proposal.evolutions.forEach(ev=>{
+      if(!updated[ev.champ]) return;
+      if(ev.action==="ajouter"&&!updated[ev.champ].includes(ev.valeur)) updated[ev.champ]=[...updated[ev.champ],ev.valeur];
+      if(ev.action==="supprimer") updated[ev.champ]=updated[ev.champ].filter(x=>x!==ev.valeur);
+    });
+    onUpdate(updated);
+  };
+
+  return <div style={{height:"100%",overflowY:"auto",background:"#fff"}}>
+    <div style={{padding:"24px 32px",borderBottom:"1px solid #f1f5f9"}}>
+      <div style={{display:"flex",alignItems:"center",gap:12}}>
+        <Avatar persona={persona} size={44}/>
+        <div>
+          <h3 style={{fontFamily:"'SF Pro Display','Helvetica Neue',sans-serif",fontSize:18,fontWeight:700,color:"#0f172a",margin:0}}>{persona.name}</h3>
+          <div style={{fontSize:12,color:"#64748b"}}>Actualisation des signaux culturels</div>
+        </div>
+      </div>
+    </div>
+    <div style={{padding:"24px 32px"}}>
+      <div style={{background:"#f8fafc",borderRadius:10,padding:"14px 16px",marginBottom:20,border:"1px solid #f1f5f9"}}>
+        <div style={{fontSize:13,color:"#374151",lineHeight:1.7}}>Claude analyse les tendances culturelles et médias récentes pour ce profil et propose des mises à jour. Vous validez avant application.</div>
+      </div>
+      <button onClick={fetchUpdate} disabled={loading} style={{width:"100%",background:loading?"#f1f5f9":"#0f172a",border:"none",color:loading?"#9ca3af":"#fff",padding:"12px",borderRadius:10,cursor:loading?"not-allowed":"pointer",fontWeight:600,fontSize:14,marginBottom:20}}>
+        {loading?"Analyse des tendances en cours...":"↻ Actualiser avec les tendances récentes"}
+      </button>
+      {error&&<div style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:10,padding:"12px",color:"#dc2626",fontSize:13,marginBottom:14}}>{error}</div>}
+      {proposal&&<div>
+        <div style={{background:"#f8fafc",borderRadius:10,padding:"16px",marginBottom:12,border:"1px solid #f1f5f9"}}>
+          <div style={{fontSize:11,fontWeight:600,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:10}}>Signaux captés</div>
+          {proposal.signaux.map((s,i)=><div key={i} style={{display:"flex",gap:8,marginBottom:6}}>
+            <div style={{width:5,height:5,borderRadius:"50%",background:"#0f172a",marginTop:6,flexShrink:0}}/>
+            <div style={{fontSize:13,color:"#374151"}}>{s}</div>
+          </div>)}
+        </div>
+        <div style={{background:"#f8fafc",borderRadius:10,padding:"16px",marginBottom:12,border:"1px solid #f1f5f9"}}>
+          <div style={{fontSize:11,fontWeight:600,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1,marginBottom:10}}>Évolutions proposées</div>
+          {proposal.evolutions.map((ev,i)=><div key={i} style={{background:"#fff",border:"1px solid #f1f5f9",borderRadius:8,padding:"10px 12px",marginBottom:8}}>
+            <div style={{display:"flex",gap:6,alignItems:"center",marginBottom:4}}>
+              <span style={{background:ev.action==="ajouter"?"#dcfce7":"#fee2e2",color:ev.action==="ajouter"?"#16a34a":"#dc2626",fontSize:10,padding:"1px 7px",borderRadius:20,fontWeight:600}}>{ev.action}</span>
+              <span style={{color:"#9ca3af",fontSize:11}}>{ev.champ}</span>
+            </div>
+            <div style={{fontSize:13,fontWeight:600,color:"#0f172a",marginBottom:2}}>{ev.valeur}</div>
+            <div style={{fontSize:12,color:"#64748b"}}>{ev.raison}</div>
+          </div>)}
+        </div>
+        <div style={{background:"#f0fdf4",borderRadius:10,padding:"14px",marginBottom:16,border:"1px solid #bbf7d0"}}>
+          <div style={{fontSize:13,color:"#374151",lineHeight:1.6}}>{proposal.synthese}</div>
+        </div>
+        <div style={{display:"flex",gap:8}}>
+          <button onClick={apply} style={{flex:1,background:"#16a34a",border:"none",color:"#fff",padding:"11px",borderRadius:10,cursor:"pointer",fontWeight:600,fontSize:13}}>✓ Appliquer</button>
+          <button onClick={()=>setProposal(null)} style={{background:"#f8fafc",border:"1px solid #e2e8f0",color:"#374151",padding:"11px 18px",borderRadius:10,cursor:"pointer",fontSize:13}}>Rejeter</button>
+        </div>
+      </div>}
+    </div>
+  </div>;
+}
+
+// ─── EDIT FORM ───
+function EditForm({initial,onSave,onCancel}) {
+  const [form,setForm]=useState({...initial});
+  const [importing,setImporting]=useState(false);
+  const [importStatus,setImportStatus]=useState(null);
+  const set=(k,v)=>setForm(f=>({...f,[k]:v}));
+  const setMd=(k,v)=>setForm(f=>({...f,marketData:{...f.marketData,[k]:v}}));
+  const fs={width:"100%",background:"#f9fafb",border:"1px solid #e5e7eb",borderRadius:8,color:"#111827",padding:"9px 12px",fontSize:13,outline:"none",boxSizing:"border-box"};
+  const ls={color:"#6b7280",fontSize:11,textTransform:"uppercase",letterSpacing:1,marginBottom:5,display:"block",fontWeight:600};
+
+  const importFromDoc=async(file)=>{
+    setImporting(true);setImportStatus("Lecture du document...");
+    try{
+      const base64=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(",")[1]);r.onerror=rej;r.readAsDataURL(file);});
+      const isPDF=file.type==="application/pdf";
+      setImportStatus("Analyse par l'IA...");
+      const sys=`Tu es un expert en construction de personas éditoriaux.
+Extrais les informations du document pour enrichir un persona.
+Réponds UNIQUEMENT en JSON valide sans backticks :
+{"name":null,"age":null,"city":null,"job":null,"bio":null,"medias":[],"interests":[],"frustrations":[],"hooks":[],"triggers":[],"tags":[],"marketData":{"revenu":null,"forfait":null,"adoption":null,"genres":null,"source":null},"notes":null}`;
+      const userContent=isPDF
+        ?[{type:"document",source:{type:"base64",media_type:"application/pdf",data:base64}},{type:"text",text:`Extrais les infos pour enrichir le persona "${form.name||"nouveau"}". Profil actuel: ${form.bio||"aucun"}`}]
+        :[{type:"text",text:`Extrais les infos de ce document texte pour enrichir "${form.name||"nouveau"}":\n\n${atob(base64).substring(0,6000)}`}];
+      const apiKey=import.meta.env.VITE_ANTHROPIC_API_KEY;
+      const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:2000,system:sys,messages:[{role:"user",content:userContent}]})});
+      const data=await res.json();
+      const text=data.content.map(i=>i.text||"").join("");
+      const extracted=JSON.parse(text.replace(/\`\`\`json|\`\`\`/g,"").trim());
+      setForm(f=>{
+        const m={...f};
+        if(extracted.name&&!f.name) m.name=extracted.name;
+        if(extracted.age&&!f.age) m.age=extracted.age;
+        if(extracted.city&&!f.city) m.city=extracted.city;
+        if(extracted.job&&!f.job) m.job=extracted.job;
+        if(extracted.bio) m.bio=f.bio?`${f.bio}\n\n[Import] ${extracted.bio}`:extracted.bio;
+        ["medias","interests","frustrations","hooks","triggers","tags"].forEach(k=>{
+          if(extracted[k]?.length){const ex=f[k]||[];const ni=extracted[k].filter(i=>!ex.some(e=>e.toLowerCase()===i.toLowerCase()));m[k]=[...ex,...ni];}
+        });
+        if(extracted.marketData){m.marketData={...f.marketData};Object.entries(extracted.marketData).forEach(([k,v])=>{if(v&&!m.marketData[k])m.marketData[k]=v;});}
+        if(extracted.notes) m.notes=f.notes?`${f.notes}\n\n[Import] ${extracted.notes}`:extracted.notes;
+        return m;
+      });
+      setImportStatus("✓ Document importé — champs enrichis");
+      setTimeout(()=>setImportStatus(null),4000);
+    }catch(e){setImportStatus("Erreur import. Vérifiez le format.");setTimeout(()=>setImportStatus(null),4000);}
+    finally{setImporting(false);}
+  };
+
+  return <div style={{height:"100%",overflowY:"auto",background:"#fff",padding:"24px 32px"}}>
+    <h3 style={{fontFamily:"'SF Pro Display','Helvetica Neue',sans-serif",fontSize:20,fontWeight:700,color:"#0f172a",marginBottom:20}}>{initial?.id?"Modifier — "+initial.name:"Nouveau persona"}</h3>
+
+    {/* Import */}
+    <div style={{background:"#f0f9ff",border:"1px solid #bae6fd",borderRadius:10,padding:"14px 16px",marginBottom:20}}>
+      <div style={{fontSize:11,fontWeight:600,color:"#0369a1",textTransform:"uppercase",letterSpacing:1,marginBottom:6}}>✨ Enrichir depuis un document</div>
+      <p style={{color:"#64748b",fontSize:12,margin:"0 0 10px",lineHeight:1.6}}>Importez une fiche persona, étude terrain, rapport ou tout document descriptif. L'IA extrait automatiquement les informations.</p>
+      <label style={{display:"inline-flex",alignItems:"center",gap:6,background:"#fff",border:"1px solid #bae6fd",color:"#0369a1",padding:"7px 14px",borderRadius:8,cursor:importing?"not-allowed":"pointer",fontSize:12,fontWeight:600}}>
+        {importing?"Analyse en cours...":"📎 Sélectionner un document (PDF, TXT)"}
+        <input type="file" accept=".pdf,.txt,.md,.docx" disabled={importing} onChange={e=>e.target.files[0]&&importFromDoc(e.target.files[0])} style={{display:"none"}}/>
+      </label>
+      {importStatus&&<div style={{marginTop:8,fontSize:12,color:importStatus.startsWith("✓")?"#16a34a":"#d97706"}}>{importStatus}</div>}
+    </div>
+
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:14}}>
+      <div><label style={ls}>Prénom</label><input value={form.name||""} onChange={e=>set("name",e.target.value)} style={fs}/></div>
+      <div><label style={ls}>Emoji</label><input value={form.emoji||""} onChange={e=>set("emoji",e.target.value)} style={{...fs,textAlign:"center",fontSize:22}}/></div>
+      <div><label style={ls}>Âge</label><input value={form.age||""} onChange={e=>set("age",e.target.value)} style={fs}/></div>
+      <div><label style={ls}>Ville</label><input value={form.city||""} onChange={e=>set("city",e.target.value)} style={fs}/></div>
+      <div style={{gridColumn:"1/-1"}}><label style={ls}>Profession</label><input value={form.job||""} onChange={e=>set("job",e.target.value)} style={fs}/></div>
+      <div>
+        <label style={ls}>Type</label>
+        <select value={form.type||""} onChange={e=>{const opt=TYPE_OPTIONS.find(o=>o.label===e.target.value);set("type",e.target.value);if(opt)set("typeColor",opt.color);}} style={{...fs,appearance:"none"}}>
+          {TYPE_OPTIONS.map(o=><option key={o.label} value={o.label}>{o.label}</option>)}
+        </select>
+      </div>
+      <div><label style={ls}>Projet</label><input value={form.project||""} onChange={e=>set("project",e.target.value)} style={fs}/></div>
+    </div>
+    <div style={{marginBottom:14}}><label style={ls}>Bio</label><textarea value={form.bio||""} onChange={e=>set("bio",e.target.value)} style={{...fs,minHeight:90,resize:"vertical"}}/></div>
+    {[["medias","Médias"],["interests","Intérêts"],["frustrations","Frustrations"],["hooks","Accroches"],["triggers","Déclencheurs"],["tags","Tags"]].map(([k,l])=>(
+      <div key={k} style={{marginBottom:12}}><label style={ls}>{l}</label><TagInput value={form[k]||[]} onChange={v=>set(k,v)} placeholder={`Ajouter ${l.toLowerCase()}...`}/></div>
+    ))}
+    <div style={{background:"#f0f9ff",borderRadius:10,padding:"14px 16px",marginBottom:14,border:"1px solid #bae6fd"}}>
+      <div style={{fontSize:11,fontWeight:600,color:"#0369a1",textTransform:"uppercase",letterSpacing:1,marginBottom:12}}>Données marché</div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+        <div><label style={ls}>Revenu</label><input value={form.marketData?.revenu||""} onChange={e=>setMd("revenu",e.target.value)} style={fs}/></div>
+        <div><label style={ls}>Forfait</label><input value={form.marketData?.forfait||""} onChange={e=>setMd("forfait",e.target.value)} style={fs}/></div>
+        <div><label style={ls}>Adoption</label><input value={form.marketData?.adoption||""} onChange={e=>setMd("adoption",e.target.value)} style={fs}/></div>
+        <div><label style={ls}>Genres %</label><input value={form.marketData?.genres||""} onChange={e=>setMd("genres",e.target.value)} style={fs}/></div>
+        <div style={{gridColumn:"1/-1"}}><label style={ls}>Source</label><input value={form.marketData?.source||""} onChange={e=>setMd("source",e.target.value)} style={fs}/></div>
+      </div>
+    </div>
+    <div style={{marginBottom:20}}><label style={ls}>Notes</label><textarea value={form.notes||""} onChange={e=>set("notes",e.target.value)} style={{...fs,minHeight:80,resize:"vertical"}}/></div>
+    <div style={{display:"flex",gap:10}}>
+      <button onClick={()=>onSave({...form,id:form.id||Date.now().toString()})} style={{background:"#0f172a",border:"none",color:"#fff",padding:"10px 22px",borderRadius:8,cursor:"pointer",fontWeight:600,fontSize:14}}>Enregistrer</button>
+      <button onClick={onCancel} style={{background:"#f8fafc",border:"1px solid #e2e8f0",color:"#374151",padding:"10px 22px",borderRadius:8,cursor:"pointer"}}>Annuler</button>
     </div>
   </div>;
 }
 
 // ─── MAIN APP ───
 export default function App() {
-  const [personas, setPersonas] = useState([]);
-  const [selected, setSelected] = useState(null);
-  const [mode, setMode] = useState("detail"); // detail | test | update | edit | new
-  const [search, setSearch] = useState("");
-  const [filterChapter, setFilterChapter] = useState("Tous");
-  const [loaded, setLoaded] = useState(false);
+  const [personas,setPersonas]=useState([]);
+  const [selected,setSelected]=useState(null);
+  const [mode,setMode]=useState("welcome");
+  const [search,setSearch]=useState("");
+  const [filterChapter,setFilterChapter]=useState("Tous");
+  const [loaded,setLoaded]=useState(false);
 
   useEffect(()=>{
-    const saved = load();
-    setPersonas(saved?.personas?.length ? saved.personas : DEFAULT_PERSONAS);
+    const saved=loadData();
+    setPersonas(saved?.personas?.length?saved.personas:DEFAULT_PERSONAS);
     setLoaded(true);
   },[]);
 
-  const save = (updated) => { setPersonas(updated); persist(updated); };
+  const save=(updated)=>{setPersonas(updated);saveData(updated);};
 
-  const filtered = personas.filter(p=>{
-    const q = search.toLowerCase();
-    const ms = !q||p.name.toLowerCase().includes(q)||p.type.toLowerCase().includes(q)||p.city?.toLowerCase().includes(q)||p.tags?.some(t=>t.toLowerCase().includes(q));
-    const mc = filterChapter==="Tous"||p.chapter===filterChapter;
+  const filtered=personas.filter(p=>{
+    const q=search.toLowerCase();
+    const ms=!q||p.name.toLowerCase().includes(q)||p.type.toLowerCase().includes(q)||p.city?.toLowerCase().includes(q)||p.tags?.some(t=>t.toLowerCase().includes(q));
+    const mc=filterChapter==="Tous"||p.chapter===filterChapter;
     return ms&&mc;
   });
 
-  const byChapter = ["TRACE","Vertical Dramas"].reduce((acc,ch)=>{
-    const list = filtered.filter(p=>p.chapter===ch);
+  const byChapter=["TRACE","Vertical Dramas"].reduce((acc,ch)=>{
+    const list=filtered.filter(p=>p.chapter===ch);
     if(list.length) acc[ch]=list;
     return acc;
   },{});
-  const uncategorized = filtered.filter(p=>!["TRACE","Vertical Dramas"].includes(p.chapter));
+  const uncategorized=filtered.filter(p=>!["TRACE","Vertical Dramas"].includes(p.chapter));
+  const selectedPersona=personas.find(p=>p.id===selected);
 
-  const selectedPersona = personas.find(p=>p.id===selected);
-
-  const handleSave = (persona) => {
-    const exists = personas.find(p=>p.id===persona.id);
-    const updated = exists ? personas.map(p=>p.id===persona.id?persona:p) : [...personas,persona];
-    save(updated); setSelected(persona.id); setMode("detail");
+  const handleSave=(persona)=>{
+    const exists=personas.find(p=>p.id===persona.id);
+    const updated=exists?personas.map(p=>p.id===persona.id?persona:p):[...personas,persona];
+    save(updated);setSelected(persona.id);setMode("detail");
   };
+  const handleDelete=(id)=>{if(!confirm("Supprimer ?"))return;save(personas.filter(p=>p.id!==id));setSelected(null);setMode("welcome");};
+  const handleSelectPersona=(id)=>{setSelected(id);setMode("test");};
 
-  const handleDelete = (id) => {
-    if(!confirm("Supprimer ce persona ?")) return;
-    save(personas.filter(p=>p.id!==id)); setSelected(null); setMode("detail");
-  };
+  if(!loaded) return <div style={{background:"#fff",minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",color:"#94a3b8",fontFamily:"system-ui"}}>Chargement…</div>;
 
-  const handleUpdate = (updated) => {
-    handleSave(updated);
-    setMode("detail");
-  };
+  const chapterColor=(ch)=>ch==="TRACE"?"#1a56db":ch==="Vertical Dramas"?"#1d6f42":"#64748b";
 
-  if(!loaded) return <div style={{background:"#080808",minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",color:"#333",fontFamily:"sans-serif"}}>Chargement…</div>;
-
-  const chapterColor = (ch) => ch==="TRACE"?"#6c63ff":ch==="Vertical Dramas"?"#2e7d32":"#555";
-
-  return <div style={{background:"#080808",minHeight:"100vh",fontFamily:"'DM Sans',system-ui,sans-serif",display:"flex",flexDirection:"column"}}>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  return <div style={{background:"#fff",minHeight:"100vh",fontFamily:"'-apple-system','SF Pro Text','Helvetica Neue',system-ui,sans-serif",display:"flex",flexDirection:"column"}}>
 
     {/* Header */}
-    <div style={{borderBottom:"1px solid #141414",padding:"13px 20px",display:"flex",alignItems:"center",gap:14,flexShrink:0}}>
-      <div>
-        <span style={{fontFamily:"'Playfair Display',serif",fontSize:18,color:"#fff"}}>Persona</span>
-        <span style={{fontFamily:"'Playfair Display',serif",fontSize:18,color:"#6c63ff"}}>Lab</span>
-        <span style={{marginLeft:8,fontSize:9,color:"#2a2a2a",textTransform:"uppercase",letterSpacing:2}}>Workspace</span>
+    <div style={{borderBottom:"1px solid #f1f5f9",padding:"13px 20px",display:"flex",alignItems:"center",gap:14,background:"rgba(255,255,255,0.95)",backdropFilter:"blur(10px)",position:"sticky",top:0,zIndex:100}}>
+      <div style={{display:"flex",alignItems:"center",gap:8,cursor:"pointer"}} onClick={()=>setMode("welcome")}>
+        <div style={{width:28,height:28,background:"#0f172a",borderRadius:7,display:"flex",alignItems:"center",justifyContent:"center"}}>
+          <span style={{color:"#fff",fontSize:14,fontWeight:800}}>P</span>
+        </div>
+        <span style={{fontFamily:"'SF Pro Display','Helvetica Neue',sans-serif",fontSize:15,fontWeight:700,color:"#0f172a",letterSpacing:-0.3}}>PersonaLab</span>
       </div>
       <div style={{flex:1}}/>
       <div style={{display:"flex",gap:5}}>
-        {CHAPTERS.map(c=><button key={c} onClick={()=>setFilterChapter(c)} style={{background:filterChapter===c?"#6c63ff":"transparent",border:`1px solid ${filterChapter===c?"#6c63ff":"#1e1e1e"}`,color:filterChapter===c?"#fff":"#444",padding:"4px 11px",borderRadius:20,cursor:"pointer",fontSize:11}}>{c}</button>)}
+        {CHAPTERS.map(c=><button key={c} onClick={()=>setFilterChapter(c)} style={{background:filterChapter===c?"#0f172a":"transparent",border:`1px solid ${filterChapter===c?"#0f172a":"#e2e8f0"}`,color:filterChapter===c?"#fff":"#64748b",padding:"4px 12px",borderRadius:20,cursor:"pointer",fontSize:11,fontWeight:500}}>{c}</button>)}
       </div>
-      <button onClick={()=>{setMode("new");setSelected(null);}} style={{background:"#6c63ff",border:"none",color:"#fff",padding:"7px 15px",borderRadius:8,cursor:"pointer",fontSize:12,fontWeight:700}}>+ Nouveau</button>
+      <button onClick={()=>{setMode("new");setSelected(null);}} style={{background:"#0f172a",border:"none",color:"#fff",padding:"7px 16px",borderRadius:8,cursor:"pointer",fontSize:12,fontWeight:600}}>+ Nouveau</button>
     </div>
 
     <div style={{display:"flex",flex:1,overflow:"hidden"}}>
       {/* Sidebar */}
-      <div style={{width:255,borderRight:"1px solid #141414",display:"flex",flexDirection:"column",flexShrink:0}}>
-        <div style={{padding:"10px 11px",borderBottom:"1px solid #141414"}}>
-          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rechercher…" style={{width:"100%",background:"#0d0d0d",border:"1px solid #1a1a1a",borderRadius:8,color:"#fff",padding:"7px 11px",fontSize:12,outline:"none",boxSizing:"border-box"}}/>
+      <div style={{width:260,borderRight:"1px solid #f1f5f9",display:"flex",flexDirection:"column",flexShrink:0,background:"#fafafa"}}>
+        <div style={{padding:"10px 12px",borderBottom:"1px solid #f1f5f9"}}>
+          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rechercher…"
+            style={{width:"100%",background:"#fff",border:"1px solid #e5e7eb",borderRadius:8,color:"#374151",padding:"7px 11px",fontSize:12,outline:"none",boxSizing:"border-box"}}/>
         </div>
         <div style={{overflowY:"auto",flex:1,padding:"8px"}}>
           {Object.entries(byChapter).map(([ch,list])=>(
             <div key={ch} style={{marginBottom:8}}>
               <div style={{padding:"6px 5px",fontSize:9,textTransform:"uppercase",letterSpacing:2,color:chapterColor(ch),fontWeight:700,borderBottom:`1px solid ${chapterColor(ch)}22`,marginBottom:6}}>
-                {ch} <span style={{color:"#2a2a2a",fontWeight:400}}>({list.length})</span>
+                {ch} <span style={{color:"#cbd5e1",fontWeight:400}}>({list.length})</span>
               </div>
               {list.map(p=><PersonaCard key={p.id} persona={p} selected={selected===p.id} onClick={()=>{setSelected(p.id);setMode("detail");}}/>)}
             </div>
           ))}
           {uncategorized.length>0&&<div>
-            <div style={{padding:"6px 5px",fontSize:9,textTransform:"uppercase",letterSpacing:2,color:"#555",fontWeight:700,marginBottom:6}}>Autres</div>
+            <div style={{padding:"6px 5px",fontSize:9,textTransform:"uppercase",letterSpacing:2,color:"#94a3b8",fontWeight:700,marginBottom:6}}>Autres</div>
             {uncategorized.map(p=><PersonaCard key={p.id} persona={p} selected={selected===p.id} onClick={()=>{setSelected(p.id);setMode("detail");}}/>)}
           </div>}
-          {filtered.length===0&&<div style={{color:"#2a2a2a",fontSize:13,textAlign:"center",padding:24}}>Aucun résultat</div>}
+          {filtered.length===0&&<div style={{color:"#cbd5e1",fontSize:13,textAlign:"center",padding:24}}>Aucun résultat</div>}
         </div>
-        <div style={{padding:"8px 12px",borderTop:"1px solid #141414",color:"#2a2a2a",fontSize:10}}>{personas.length} personas · sauvegardé</div>
+        <div style={{padding:"8px 14px",borderTop:"1px solid #f1f5f9",color:"#cbd5e1",fontSize:10,background:"#fafafa"}}>{personas.length} personas</div>
       </div>
 
-      {/* Main panel */}
+      {/* Main */}
       <div style={{flex:1,overflow:"hidden"}}>
-        {mode==="new"&&<EditForm initial={{id:Date.now().toString(),name:"",emoji:"👤",age:"",city:"",job:"",type:"Curieux",typeColor:"#f5a623",chapter:"Vertical Dramas",bio:"",medias:[],interests:[],frustrations:[],hooks:[],triggers:[],marketData:{},notes:"",project:"",tags:[]}} onSave={handleSave} onCancel={()=>setMode("detail")}/>}
+        {mode==="welcome"&&<WelcomeScreen personas={personas} onSelect={id=>{setSelected(id);setMode("detail");}}/>}
+        {mode==="new"&&<EditForm initial={{id:"",name:"",emoji:"👤",age:"",city:"",job:"",type:"Curieux",typeColor:"#b45309",chapter:"Vertical Dramas",bio:"",medias:[],interests:[],frustrations:[],hooks:[],triggers:[],marketData:{},notes:"",project:"",tags:[]}} onSave={handleSave} onCancel={()=>setMode(selected?"detail":"welcome")}/>}
         {mode==="edit"&&selectedPersona&&<EditForm initial={selectedPersona} onSave={handleSave} onCancel={()=>setMode("detail")}/>}
-        {mode==="test"&&selectedPersona&&<TestPanel persona={selectedPersona}/>}
-        {mode==="update"&&selectedPersona&&<UpdatePanel persona={selectedPersona} onUpdate={handleUpdate}/>}
+        {mode==="test"&&selectedPersona&&<TestPanel persona={selectedPersona} allPersonas={personas} onSelectPersona={handleSelectPersona}/>}
+        {mode==="update"&&selectedPersona&&<UpdatePanel persona={selectedPersona} onUpdate={p=>{handleSave(p);setMode("detail");}}/>}
         {mode==="detail"&&selectedPersona&&<DetailView persona={selectedPersona} onEdit={()=>setMode("edit")} onDelete={()=>handleDelete(selectedPersona.id)} onTest={()=>setMode("test")} onUpdate={()=>setMode("update")}/>}
-        {(mode==="detail"||mode==="test"||mode==="update")&&!selectedPersona&&<div style={{height:"100%",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16}}>
-          <div style={{fontSize:52}}>👤</div>
-          <div style={{color:"#2a2a2a",fontSize:14}}>Sélectionne un persona</div>
-          <button onClick={()=>setMode("new")} style={{background:"#6c63ff",border:"none",color:"#fff",padding:"9px 22px",borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:700}}>+ Nouveau persona</button>
-        </div>}
       </div>
     </div>
   </div>;
