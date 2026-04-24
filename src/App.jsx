@@ -367,17 +367,80 @@ function TestPanel({persona,allPersonas,onSelectPersona}) {
 
   const readFile=async(file)=>{
     setFileLoading(true);
-    const base64=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(",")[1]);r.onerror=rej;r.readAsDataURL(file);});
-    if(file.type==="application/pdf"){
-      setContent(`[PDF : ${file.name}]`);
-      sessionStorage.setItem("lastDocB64",base64);
-      sessionStorage.setItem("lastDocType","pdf");
-    } else {
-      try{setContent(atob(base64).substring(0,6000));}catch{setContent(new TextDecoder().decode(Uint8Array.from(atob(base64),c=>c.charCodeAt(0))).substring(0,6000));}
-      sessionStorage.removeItem("lastDocB64");
+    sessionStorage.removeItem("lastDocB64");
+    sessionStorage.removeItem("lastDocType");
+    try {
+      const name = file.name.toLowerCase();
+      const type = file.type;
+
+      const isPDF = type==="application/pdf";
+      const isDocx = name.endsWith(".docx") || type==="application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+      const isText = type.startsWith("text/") || name.endsWith(".txt") || name.endsWith(".md");
+      const isAudio = type.startsWith("audio/") || name.endsWith(".mp3") || name.endsWith(".wav") || name.endsWith(".m4a") || name.endsWith(".ogg") || name.endsWith(".flac") || name.endsWith(".aac") || name.endsWith(".webm");
+      const isImage = type.startsWith("image/") || name.endsWith(".jpg") || name.endsWith(".jpeg") || name.endsWith(".png") || name.endsWith(".gif") || name.endsWith(".webp");
+
+      const toBase64 = (f,asDataURL=false) => new Promise((res,rej)=>{
+        const r=new FileReader();
+        r.onload=()=>res(asDataURL ? r.result : r.result.split(",")[1]);
+        r.onerror=rej;
+        r.readAsDataURL(f);
+      });
+
+      if(isPDF) {
+        const base64 = await toBase64(file);
+        setContent(`[PDF : ${file.name}]`);
+        sessionStorage.setItem("lastDocB64", base64);
+        sessionStorage.setItem("lastDocType", "pdf");
+        sessionStorage.setItem("lastDocName", file.name);
+
+      } else if(isDocx) {
+        const arrBuf = await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsArrayBuffer(file);});
+        const raw = new TextDecoder("utf-8",{fatal:false}).decode(new Uint8Array(arrBuf));
+        const matches = [...raw.matchAll(/<w:t[^>]*>([^<]+)<\/w:t>/g)];
+        const extracted = matches.map(m=>m[1]).join(" ").replace(/\s+/g," ").trim().substring(0,6000);
+        setContent(extracted || "[Document Word vide — collez le contenu manuellement]");
+
+      } else if(isText) {
+        const text = await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsText(file,"UTF-8");});
+        setContent(text.substring(0,6000));
+
+      } else if(isAudio) {
+        const base64 = await toBase64(file);
+        const audioMime = type || "audio/mpeg";
+        setContent(`[Audio : ${file.name}]`);
+        sessionStorage.setItem("lastDocB64", base64);
+        sessionStorage.setItem("lastDocType", "audio");
+        sessionStorage.setItem("lastDocMime", audioMime);
+        sessionStorage.setItem("lastDocName", file.name);
+
+      } else if(isImage) {
+        const base64 = await toBase64(file);
+        const imgMime = type || "image/jpeg";
+        setContent(`[Image : ${file.name}]`);
+        sessionStorage.setItem("lastDocB64", base64);
+        sessionStorage.setItem("lastDocType", "image");
+        sessionStorage.setItem("lastDocMime", imgMime);
+        sessionStorage.setItem("lastDocName", file.name);
+
+      } else {
+        setContent(`[Format non supporté : ${file.name}]
+
+Formats acceptés :
+· Documents : PDF, Word (.docx), TXT, Markdown
+· Audio : MP3, WAV, M4A, OGG, FLAC, AAC
+· Images : JPG, PNG, GIF, WebP
+
+Pour la vidéo, exportez la piste audio ou collez le transcript ci-dessous.`);
+      }
+
+    } catch(e) {
+      setContent(`[Erreur de lecture : ${e.message}]
+
+Essayez de copier-coller le contenu directement.`);
     }
     setFileLoading(false);
   };
+;
 
   const analyze=async()=>{
     if(!content.trim()) return;
@@ -396,9 +459,29 @@ Réponds UNIQUEMENT en JSON valide sans backticks :
     try{
       const docB64=sessionStorage.getItem("lastDocB64");
       const docType=sessionStorage.getItem("lastDocType");
+      const docMime=sessionStorage.getItem("lastDocMime")||"";
+      const docName=sessionStorage.getItem("lastDocName")||"fichier";
       let doc=null;
-      if(docB64&&docType==="pdf") doc={type:"document",source:{type:"base64",media_type:"application/pdf",data:docB64}};
-      const text=await callClaude(sys,`Analyse ce contenu :\n\n${content}`,doc);
+
+      if(docB64&&docType==="pdf") {
+        doc={type:"document",source:{type:"base64",media_type:"application/pdf",data:docB64}};
+      } else if(docB64&&docType==="audio") {
+        doc={type:"document",source:{type:"base64",media_type:docMime,data:docB64}};
+      } else if(docB64&&docType==="image") {
+        doc={type:"image",source:{type:"base64",media_type:docMime,data:docB64}};
+      }
+
+      const userMsg = docType==="audio"
+        ? `Transcris et analyse ce fichier audio "${docName}" depuis le point de vue de ${persona.name} :
+
+${content}`
+        : docType==="image"
+        ? `Analyse cette image "${docName}" comme contenu éditorial depuis le point de vue de ${persona.name} :
+
+${content}`
+        : `Analyse ce contenu :\n\n${content}`;
+
+      const text=await callClaude(sys, userMsg, doc);
       setResult(JSON.parse(text.replace(/\`\`\`json|\`\`\`/g,"").trim()));
     }catch(e){setError("Erreur d'analyse. Vérifiez la connexion.");}
     finally{setLoading(false);}
@@ -428,8 +511,8 @@ Réponds UNIQUEMENT en JSON valide sans backticks :
       </div>
       <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:16,flexWrap:"wrap"}}>
         <label style={{display:"inline-flex",alignItems:"center",gap:6,background:"#f8fafc",border:"1px solid #e2e8f0",color:"#374151",padding:"6px 12px",borderRadius:8,cursor:"pointer",fontSize:12,fontWeight:500}}>
-          {fileLoading?"Lecture...":"📎 Document"}
-          <input type="file" accept=".pdf,.txt,.md" disabled={fileLoading} onChange={e=>e.target.files[0]&&readFile(e.target.files[0])} style={{display:"none"}}/>
+          {fileLoading?"Lecture...":"📎 Fichier (doc, audio, image)"}
+          <input type="file" accept=".pdf,.docx,.txt,.md,.mp3,.wav,.m4a,.ogg,.flac,.aac,.webm,.jpg,.jpeg,.png,.gif,.webp" disabled={fileLoading} onChange={e=>e.target.files[0]&&readFile(e.target.files[0])} style={{display:"none"}}/>
         </label>
         {[{label:"📝 Synopsis",v:"Synopsis d'une série verticale africaine de 8 épisodes de 2 minutes sur l'amour à Dakar entre deux jeunes professionnels."},
           {label:"🎬 Script",v:"Script pilote — Scène d'ouverture : une jeune femme reçoit un message de son ex le jour de son mariage. Format vertical, 90 secondes."},
@@ -578,9 +661,26 @@ function EditForm({initial,onSave,onCancel}) {
       const sys=`Extrais les informations du document pour enrichir un persona éditorial.
 Réponds UNIQUEMENT en JSON valide sans backticks :
 {"name":null,"age":null,"city":null,"job":null,"bio":null,"medias":[],"interests":[],"frustrations":[],"hooks":[],"triggers":[],"tags":[],"marketData":{"revenu":null,"forfait":null,"adoption":null,"genres":null,"source":null},"notes":null}`;
-      const userContent=isPDF
-        ?[{type:"document",source:{type:"base64",media_type:"application/pdf",data:base64}},{type:"text",text:`Extrais les infos pour "${form.name||"nouveau"}"`}]
-        :[{type:"text",text:`Extrais les infos de ce document pour "${form.name||"nouveau"}":\n\n${atob(base64).substring(0,6000)}`}];
+      // Determine content type and build userContent
+      const isDocxFile=file.name.endsWith(".docx")||file.type==="application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+      let userContent;
+      if(isPDF){
+        userContent=[{type:"document",source:{type:"base64",media_type:"application/pdf",data:base64}},{type:"text",text:`Extrais les infos pour "${form.name||"nouveau"}"`}];
+      } else if(isDocxFile){
+        const arrBuf=await new Promise((res2,rej2)=>{const r2=new FileReader();r2.onload=()=>res2(r2.result);r2.onerror=rej2;r2.readAsArrayBuffer(file);});
+        const rawDoc=new TextDecoder("utf-8",{fatal:false}).decode(new Uint8Array(arrBuf));
+        const wMatches=[...rawDoc.matchAll(/<w:t[^>]*>([^<]+)<\/w:t>/g)];
+        const docText=wMatches.map(m=>m[1]).join(" ").replace(/\s+/g," ").trim().substring(0,6000);
+        userContent=[{type:"text",text:`Extrais les infos de ce document Word pour "${form.name||"nouveau"}":
+
+${docText||"[texte non extrait]"}`}];
+      } else {
+        const textDec=new TextDecoder("utf-8",{fatal:false});
+        const textContent=textDec.decode(Uint8Array.from(atob(base64),c=>c.charCodeAt(0))).substring(0,6000);
+        userContent=[{type:"text",text:`Extrais les infos de ce document pour "${form.name||"nouveau"}":
+
+${textContent}`}];
+      }
       const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:2000,system:sys,messages:[{role:"user",content:userContent}]})});
       const data=await res.json();
       const extracted=JSON.parse(data.content.map(i=>i.text||"").join("").replace(/\`\`\`json|\`\`\`/g,"").trim());
@@ -610,7 +710,7 @@ Réponds UNIQUEMENT en JSON valide sans backticks :
       <p style={{color:"#64748b",fontSize:12,margin:"0 0 10px",lineHeight:1.5}}>Importez une fiche persona, étude terrain ou tout document descriptif. L'IA en extrait les informations automatiquement.</p>
       <label style={{display:"inline-flex",alignItems:"center",gap:6,background:"#fff",border:"1px solid #bae6fd",color:"#0369a1",padding:"7px 14px",borderRadius:8,cursor:importing?"not-allowed":"pointer",fontSize:12,fontWeight:600}}>
         {importing?"Analyse...":"📎 Sélectionner un document"}
-        <input type="file" accept=".pdf,.txt,.md" disabled={importing} onChange={e=>e.target.files[0]&&importFromDoc(e.target.files[0])} style={{display:"none"}}/>
+        <input type="file" accept=".pdf,.docx,.txt,.md" disabled={importing} onChange={e=>e.target.files[0]&&importFromDoc(e.target.files[0])} style={{display:"none"}}/>
       </label>
       {importStatus&&<span style={{marginLeft:10,fontSize:12,color:importStatus.startsWith("✓")?"#16a34a":"#d97706"}}>{importStatus}</span>}
     </div>
