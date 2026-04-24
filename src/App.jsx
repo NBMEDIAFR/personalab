@@ -355,15 +355,21 @@ function DetailView({persona,onEdit,onDelete,onTest,onUpdate}) {
 
 // ─── TEST PANEL ───
 function TestPanel({persona,allPersonas,onSelectPersona}) {
-  const [content,setContent]=useState(()=>{
-    const saved=sessionStorage.getItem("crossTestContent");
-    if(saved){sessionStorage.removeItem("crossTestContent");return saved;}
-    return "";
-  });
+  const [content,setContent]=useState("");
   const [loading,setLoading]=useState(false);
   const [result,setResult]=useState(null);
   const [error,setError]=useState(null);
   const [fileLoading,setFileLoading]=useState(false);
+
+  // When persona changes (cross-test navigation), restore saved content
+  useEffect(()=>{
+    const saved=sessionStorage.getItem("crossTestContent");
+    if(saved){
+      sessionStorage.removeItem("crossTestContent");
+      setContent(saved);
+      setResult(null);
+    }
+  },[persona.id]);
   const scoreColor=result?(result.score>=70?"#16a34a":result.score>=40?"#d97706":"#dc2626"):"#0f172a";
 
   const readFile=async(file)=>{
