@@ -354,7 +354,11 @@ function DetailView({persona,onEdit,onDelete,onTest,onUpdate}) {
 
 // ─── TEST PANEL ───
 function TestPanel({persona,allPersonas,onSelectPersona}) {
-  const [content,setContent]=useState("");
+  const [content,setContent]=useState(()=>{
+    const saved=sessionStorage.getItem("crossTestContent");
+    if(saved){sessionStorage.removeItem("crossTestContent");return saved;}
+    return "";
+  });
   const [loading,setLoading]=useState(false);
   const [result,setResult]=useState(null);
   const [error,setError]=useState(null);
@@ -401,6 +405,10 @@ Réponds UNIQUEMENT en JSON valide sans backticks :
   };
 
   const crossRecs=result?allPersonas.filter(p=>p.id!==persona.id).slice(0,3):[];
+  const handleCrossSelect=(id)=>{
+    sessionStorage.setItem("crossTestContent",content);
+    onSelectPersona(id);
+  };
 
   return <div style={{height:"100%",overflowY:"auto",background:"#fff"}}>
     <div style={{padding:"24px 32px",borderBottom:"1px solid #f1f5f9",display:"flex",alignItems:"center",gap:12}}>
@@ -474,7 +482,7 @@ Réponds UNIQUEMENT en JSON valide sans backticks :
           <div style={{fontSize:11,fontWeight:600,color:"#0369a1",textTransform:"uppercase",letterSpacing:1,marginBottom:12}}>
             {result.score<50?"Ce contenu pourrait mieux correspondre à...":"Comparez avec d'autres personas"}
           </div>
-          {crossRecs.map(p=><button key={p.id} onClick={()=>onSelectPersona(p.id)} style={{display:"flex",alignItems:"center",gap:10,background:"#fff",border:"1px solid #e0f2fe",borderRadius:8,padding:"8px 12px",cursor:"pointer",width:"100%",marginBottom:6,textAlign:"left"}}>
+          {crossRecs.map(p=><button key={p.id} onClick={()=>handleCrossSelect(p.id)} style={{display:"flex",alignItems:"center",gap:10,background:"#fff",border:"1px solid #e0f2fe",borderRadius:8,padding:"8px 12px",cursor:"pointer",width:"100%",marginBottom:6,textAlign:"left"}}>
             <Avatar persona={p} size={30}/>
             <div style={{flex:1}}><div style={{fontSize:13,fontWeight:600,color:"#0f172a"}}>{p.name}</div><div style={{fontSize:11,color:"#64748b"}}>{p.type} · {p.city}</div></div>
             <span style={{fontSize:12,color:"#0369a1"}}>Tester →</span>
