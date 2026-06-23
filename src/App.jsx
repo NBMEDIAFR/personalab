@@ -77,7 +77,7 @@ async function callClaude(system, userMsg, docContent=null) {
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method:"POST",
     headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
-    body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:2000,system,messages:[{role:"user",content:msgContent}]})
+    body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:2000,system,messages:[{role:"user",content:msgContent}]})
   });
   if(!res.ok) {
     const errData = await res.json().catch(()=>({}));
@@ -672,7 +672,7 @@ Réponds UNIQUEMENT en JSON valide sans backticks :
 
 ${textContent}`}];
       }
-      const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:2000,system:sys,messages:[{role:"user",content:userContent}]})});
+      const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:2000,system:sys,messages:[{role:"user",content:userContent}]})});
       const data=await res.json();
       const extracted=JSON.parse(data.content.map(i=>i.text||"").join("").replace(/\`\`\`json|\`\`\`/g,"").trim());
       setForm(f=>{
